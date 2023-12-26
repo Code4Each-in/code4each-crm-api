@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Websites extends Model
 {
     use HasFactory;
+
+    public function agencyWebsiteDetail()
+    {
+        return $this->hasOne(AgencyWebsite::class, 'website_id');
+    }
+
 }

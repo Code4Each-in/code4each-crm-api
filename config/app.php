@@ -55,6 +55,7 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'frontend_url' => env('FRONTEND_URL', 'https://rococo-yeot-aa8270.netlify.app'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -69,7 +70,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
+
+    // 'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------

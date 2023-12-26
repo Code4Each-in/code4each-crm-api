@@ -56,12 +56,17 @@ class CommonEmailNotification extends Notification
                         $mailMessage->line($value);
                     }
                 }
-                $mailMessage->action(isset($this->messages['url-title']) ? $this->messages['url-title'] : 'Action Not Required', isset($this->messages['url']) ? url($this->messages['url']) : '#');
+                if (isset($this->messages['url-title']) || isset($this->messages['url'])) {
+                    $mailMessage->action(
+                        isset($this->messages['url-title']) ? $this->messages['url-title'] : 'Action Not Required',
+                        isset($this->messages['url']) ? url($this->messages['url']) : '#'
+                    );
+                }
                 $mailMessage->line(isset($this->messages['additional-info']) ? $this->messages['additional-info'] : '');
                 $mailMessage->line('Thank you for using our Platform!');
-                
+
                 return $mailMessage;
-                
+
     }
     /**
      * Get the array representation of the notification.

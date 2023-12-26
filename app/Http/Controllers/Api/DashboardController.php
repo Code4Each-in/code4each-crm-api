@@ -20,8 +20,8 @@ class DashboardController extends Controller
     public function index()
     {
         $response = [
-            'success' => true,
-            'status' => 200,
+            'success' => false,
+            'status' => 400,
         ];
         //Check if verifyEmail Middleware have verification_notification Message
         if (session()->has('verification_notice')) {
@@ -33,11 +33,15 @@ class DashboardController extends Controller
         $user = User::with('agency')->where('id',auth()->user()->id)->first();
         $agency_id = $user->agency_id;
         $response['user'] = $user;
-        $agencyWebsiteInfo= AgencyWebsite::join('websites', 'agency_websites.website_id', '=', 'websites.id')->where('agency_id','=', $agency_id)->get(['agency_websites.business_name', 'websites.website_domain']);
+        $agencyWebsiteInfo= AgencyWebsite::join('websites', 'agency_websites.website_id', '=', 'websites.id')->where('agency_id','=', $agency_id)->get(['websites.id','agency_websites.*', 'websites.website_domain']);
         if($agencyWebsiteInfo->count() > 0){
         $response['agency_website_info'] = $agencyWebsiteInfo;
         }
+
         $response['message'] =  "Welcome to the dashboard.";
+        $response['success'] = true;
+        $response['status'] = 200;
+
         return response()->json($response);
     }
 
