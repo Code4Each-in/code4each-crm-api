@@ -27,7 +27,7 @@
                             <tbody>
                                 @forelse($components as $data)
                                 <tr>
-                                    <td><a href="{{ url('/component/'.$data->id)}}">#{{$data->id}}</a>
+                                    <td><a href="{{ url('/components/edit/'.$data->id)}}">{{$data->id}}</a>
                                     <td>{{($data->component_name )}}</td>
                                     <td>
                                     {{($data->path )}}
@@ -39,14 +39,17 @@
                                     <td>{{ $data->status }}</td>
                                     <td>
                                         @if ($data->preview)
-                                        <img src="{{ asset('storage/' . $data->preview) }}" height="150" width="200" alt="Preview Image">
+                                        <img src="{{ asset('storage/' . $data->preview) }}" height="70" width="120" alt="Preview Image">
                                         @else
                                             ---
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ url('/edit/components/'.$data->id)}}">
+                                        <a href="{{ url('/components/edit/'.$data->id)}}">
                                         <i style="color:#4154f1;" href="javascript:void(0)" class="fa fa-edit fa-fw pointer"> </i>
+                                        </a>
+                                        <a href="{{ url('/components/areas/'.$data->id)}}">
+                                            <i class="fa-regular fa fa-clone"></i>
                                         </a>
 
                                         <!-- <i style="color:#4154f1;" onClick="deleteProjects('{{ $data->id }}')" href="javascript:void(0)" class="fa fa-trash fa-fw pointer"></i> -->

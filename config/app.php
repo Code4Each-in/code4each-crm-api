@@ -55,6 +55,7 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'frontend_url' => env('FRONTEND_URL', 'https://rococo-yeot-aa8270.netlify.app'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -69,7 +70,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
+
+    // 'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
@@ -211,5 +214,17 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
+
+    /* 
+    
+        TWilio Acount Detail
+    */
+
+
+
+    'twilio' => [
+        'TWILIO_AUTH_TOKEN'  => env('TWILIO_AUTH_TOKEN'),
+        'TWILIO_ACCOUNT_SID' => env('TWILIO_ACCOUNT_SID')
+    ],
 
 ];

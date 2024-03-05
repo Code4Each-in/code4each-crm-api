@@ -21,7 +21,12 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'agency_id',
+        'social_id',
+        'social_type',
+        'user_type',
     ];
 
     /**
@@ -46,5 +51,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function agency()
     {
         return $this->belongsTo(Agency::class,);
+    }
+
+    public function verificationCode()
+    {
+        return $this->hasMany(VerificationCode::class);
     }
 }
