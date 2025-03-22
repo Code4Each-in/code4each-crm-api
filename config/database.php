@@ -63,6 +63,23 @@ return [
             ]) : [],
         ],
 
+         
+        'mysql_wordpress' => [
+            'driver' => 'mysql',
+            'host' => '127.0.0.1', // Static database host
+            'port' => '3306', // Static port
+            'database' => 'u170671405_zL6IC', // Static database name (same as DB_NAME in WordPress)
+            'username' => 'u170671405_P6Dk0', // Static database user (same as DB_USER in WordPress)
+            'password' => '1pB?LRw:0vm', // Static password (same as DB_PASSWORD in WordPress)
+            'charset' => 'utf8mb4', // Static charset (same as DB_CHARSET in WordPress)
+            'collation' => 'utf8mb4_unicode_ci', // Static collation (DB_COLLATE can be left empty)
+            'prefix' => 'wp_', // Static table prefix, if any
+            'strict' => true,
+            'engine' => null,
+        ],
+    
+
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

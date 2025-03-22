@@ -5,7 +5,7 @@
     <meta content="" name="keywords">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicons -->
-    <link href="{{ asset('img/code4each_fav.png') }}" rel="icon">
+    <link href="{{ asset('img/speedy-logo.png') }}" rel="icon">
     <link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
     <!-- Google Fonts -->

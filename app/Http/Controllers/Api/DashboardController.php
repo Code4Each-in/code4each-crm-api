@@ -20,8 +20,8 @@ class DashboardController extends Controller
     public function index()
     {
         $response = [
-            'success' => true,
-            'status' => 200,
+            'success' => false,
+            'status' => 400,
         ];
         //Check if verifyEmail Middleware have verification_notification Message
         if (session()->has('verification_notice')) {
@@ -30,14 +30,23 @@ class DashboardController extends Controller
             session()->forget('verification_notice');
         }
         //Get Auth User Using laravel auth method
-        $user = User::with('agency')->where('id',auth()->user()->id)->first();
-        $agency_id = $user->agency_id;
+        $user = User::with(['agency','agency.agencyWebsites','agency.agencyWebsites.websiteDetail','currentPlans.plan'])->where('id',auth()->user()->id)->first();
         $response['user'] = $user;
-        $agencyWebsiteInfo= AgencyWebsite::join('websites', 'agency_websites.website_id', '=', 'websites.id')->where('agency_id','=', $agency_id)->get(['agency_websites.business_name', 'websites.website_domain']);
-        if($agencyWebsiteInfo->count() > 0){
-        $response['agency_website_info'] = $agencyWebsiteInfo;
+
+    if ($user && $user->agency) {
+        $agencyWebsitesInfo = [];
+    
+        foreach ($user->agency->agencyWebsites as $website) {
+            $agencyWebsitesInfo[] = $website;
         }
+    } 
+    
+    $response['agency_website_info'] = $agencyWebsitesInfo ?? [];
+
         $response['message'] =  "Welcome to the dashboard.";
+        $response['success'] = true;
+        $response['status'] = 200;
+
         return response()->json($response);
     }
 

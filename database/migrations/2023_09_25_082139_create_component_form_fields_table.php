@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('component_id')->constrained();
             $table->string('field_name');
             $table->string('field_type');
-            $table->string('default_value');
+            $table->text('default_value');
             $table->timestamps();
         });
     }

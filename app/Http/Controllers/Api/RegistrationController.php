@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use App\Models\User;
 use App\Notifications\CommonEmailNotification;
+use App\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +17,6 @@ use Laravel\Passport\PersonalAccessTokenResult;
 
 class RegistrationController extends Controller
 {
-
-
-
     public function store(Request $request)
     {
         $response = [
@@ -32,6 +30,8 @@ class RegistrationController extends Controller
             'email' => 'required|email|unique:users',
             'phone' => 'required',
             'password' => 'required',
+        ], [
+            'email.unique' => 'This email is already in use, please try with some other email address.',
         ]);
 
         if ($validator->fails()) {
@@ -54,6 +54,7 @@ class RegistrationController extends Controller
             $userObj->email = $validate['email'];
             $userObj->phone = $validate['phone'];
             $userObj->role = "admin";
+            $userObj->user_type = "user";
             $userObj->password = Hash::make($validate['password']);
             $userObj->save();
 
@@ -61,23 +62,12 @@ class RegistrationController extends Controller
 
             $token = $userObj->createToken('access-token')->accessToken;
 
-            $verificationLink = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(config('auth.verification.expire', 60)),
-                ['id' => $userObj->id, 'hash' => sha1($userObj->getEmailForVerification())]
-            );
-
             $messages = [
-                'subject' => 'Confirmation Email for Registering On Code4Each CRM Portal',
-                'additional-info' => 'If you have Already Verified Your Account, please ignore this email. Your account will not be activated unless you confirm your email address.',
-                'url-title' => 'Verify Email Address',
-                'url' => $verificationLink,
-                'lines_array' => [
-                    'title' => 'Congratulations and welcome to Code4Each CRM! We \'re thrilled to have you as a new member of our community.',
-                    'body-text' => 'To get started, please click on the link below to confirm your email address and activate your account:',
-                ],
+                'greeting-text' => 'Hey! '. $userObj->name,
             ];
-            $userObj->notify(new CommonEmailNotification($messages));
+            // Send Verification Email Using Custom Verify Notification
+            $userObj->notify(new VerifyEmail($messages));
+
             $messages = [
                 'subject' => 'New Agency Is Register With Our CRM Platform',
                 'url-title' => 'Find Detail',
@@ -89,12 +79,18 @@ class RegistrationController extends Controller
                     'special_Email' => $userObj->email,
                 ],
             ];
-            $admin = User::where('role','super_admin')->first();
-            $admin->notify(new CommonEmailNotification($messages));
+            $admins = User::where('role', 'super_admin')->get();
+
+            if ($admins->count() > 0) {
+                foreach ($admins as $admin) {
+                    $admin->notify(new CommonEmailNotification($messages));
+                }
+            }
+
             $response = [
-                'success' => true,
                 'message' => 'Company Register Successfully.',
                 'token' => $token,
+                'success' => true,
                 'status' => 200,
             ];
 
@@ -116,55 +112,5 @@ class RegistrationController extends Controller
             ];
             return response()->json($response,401);
         }
-    }
-    public function login(Request $request)
-    {
-        $response = [
-            'success' => false,
-            'status' => 400,
-        ];
-
-        $validator = Validator::make($request->all(), [
-            'email' => 'required',
-            'password' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
-
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $tokenResult = $user->createToken('access-token');
-            $token = $tokenResult->accessToken;
-
-            $response['success'] = true;
-            $response['status'] = 200;
-            $response['message'] = 'User Login Successfully';
-            $response['token'] = $token;
-
-            return response()->json($response);
-        } else {
-            $response['message'] = 'Invalid credentials';
-            $response['status'] = 401;
-
-
-            return response()->json($response, 401);
-        }
-    }
-    public function logout()
-    {
-        $user = Auth::user();
-        $user->tokens()->delete();
-
-        $response = [
-            'success' => true,
-            'status' => 200,
-            'message' => 'User logged out successfully.',
-        ];
-
-        return response()->json($response);
     }
 }

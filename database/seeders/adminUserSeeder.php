@@ -19,11 +19,11 @@ class adminUserSeeder extends Seeder
         $user = new User();
         $user->agency_id = 0;
         $user->name = "Admin";
-        $user->email = "admin.code4each@yopmail.com";
+        $user->email = "arsh@code4each.com";
         $user->role = "super_admin";
-        $user->password = "123456";
+        $user->password =  bcrypt('038r7l1i');
         $user->email_verified_at = Carbon::now();
-        $user->phone = "8288973748";
+        $user->phone = "8054857702";
         $user->save();
     }
 }

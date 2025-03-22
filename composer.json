@@ -6,12 +6,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
+        "doctrine/dbal": "^3.7",
         "fruitcake/laravel-cors": "^3.0",
+        "google/apiclient": "^2.15",
         "guzzlehttp/guzzle": "^7.8",
         "laravel/framework": "^9.19",
         "laravel/passport": "^11.8",
         "laravel/sanctum": "^3.0",
-        "laravel/tinker": "^2.7"
+        "laravel/tinker": "^2.7",
+        "razorpay/razorpay": "^2.9"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -27,7 +30,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/Helper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
