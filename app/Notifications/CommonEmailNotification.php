@@ -41,26 +41,26 @@ class CommonEmailNotification extends Notification
      */
     public function toMail($notifiable)
     {
-            $mailMessage = new MailMessage;
-            $mailMessage->greeting(isset($this->messages['greeting-text']) ? $this->messages['greeting-text'] : '');
-            $mailMessage->subject(isset($this->messages['subject']) ? $this->messages['subject'] : 'Notification Email');
-                // ->line(isset($this->messages['title']) ? $this->messages['title'] : 'Title')
-                // ->line(isset($this->messages['body-text']) ? $this->messages['body-text'] : 'Body Text')
-                $lineItems = $this->messages['lines_array'];
+        $mailMessage = new MailMessage;
+        $mailMessage->greeting(isset($this->messages['greeting-text']) ? $this->messages['greeting-text'] : '');
+        $mailMessage->subject(isset($this->messages['subject']) ? $this->messages['subject'] : 'Notification Email');
+            // ->line(isset($this->messages['title']) ? $this->messages['title'] : 'Title')
+            // ->line(isset($this->messages['body-text']) ? $this->messages['body-text'] : 'Body Text')
+            $lineItems = $this->messages['lines_array'];
 
-                foreach ($lineItems as $key => $value) {
-                    if (strpos($key, 'special_') === 0) {
-                        $specialLabel = ucwords(str_replace('_', ' ', str_replace('special_', '', $key)));
-                        $mailMessage->line( $specialLabel . ': ' . $value);
-                    } else {
-                        $mailMessage->line($value);
-                    }
+            foreach ($lineItems as $key => $value) {
+                if (strpos($key, 'special_') === 0) {
+                    $specialLabel = ucwords(str_replace('_', ' ', str_replace('special_', '', $key)));
+                    $mailMessage->line( $specialLabel . ': ' . $value);
+                } else {
+                    $mailMessage->line($value);
                 }
-                $mailMessage->action(isset($this->messages['url-title']) ? $this->messages['url-title'] : 'Action Not Required', isset($this->messages['url']) ? url($this->messages['url']) : '#');
-                $mailMessage->line(isset($this->messages['additional-info']) ? $this->messages['additional-info'] : '');
-                $mailMessage->line('Thank you for using our Platform!');
-                
-                return $mailMessage;
+            }
+            $mailMessage->action(isset($this->messages['url-title']) ? $this->messages['url-title'] : 'Action Not Required', isset($this->messages['url']) ? url($this->messages['url']) : '#');
+            $mailMessage->line(isset($this->messages['additional-info']) ? $this->messages['additional-info'] : '');
+            $mailMessage->line('Thank you for using our Platform!');
+            
+            return $mailMessage;
                 
     }
     /**

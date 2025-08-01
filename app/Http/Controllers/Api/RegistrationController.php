@@ -68,18 +68,18 @@ class RegistrationController extends Controller
             );
 
             $messages = [
-                'subject' => 'Confirmation Email for Registering On Code4Each CRM Portal',
-                'additional-info' => 'If you have Already Verified Your Account, please ignore this email. Your account will not be activated unless you confirm your email address.',
+                'subject' => 'Welcome to SpeedySites – Verify Your Email to Get Started!',
+                'additional-info' => 'If the button doesn’t work, you can also copy and paste the following link into your browser:',
                 'url-title' => 'Verify Email Address',
                 'url' => $verificationLink,
                 'lines_array' => [
-                    'title' => 'Congratulations and welcome to Code4Each CRM! We \'re thrilled to have you as a new member of our community.',
-                    'body-text' => 'To get started, please click on the link below to confirm your email address and activate your account:',
+                    'title' => 'Thank you for registering with SpeedySites – your platform to launch beautiful websites without writing a single line of code!',
+                    'body-text' => 'To complete your registration and activate your account, please verify your email address by clicking the link below:',
                 ],
             ];
             $userObj->notify(new CommonEmailNotification($messages));
             $messages = [
-                'subject' => 'New Agency Is Register With Our CRM Platform',
+                'subject' => 'New Agency Is Register With SpeedySites Platform',
                 'url-title' => 'Find Detail',
                 'url' => '/',
                 'lines_array' => [
@@ -111,7 +111,7 @@ class RegistrationController extends Controller
             $response = [
                 'success' => false,
                 'status' => 400,
-                'message' => 'An error occurred while processing your request.',
+                'message' => "\nError: $errorMessage\nFile: $errorFile\nLine: $errorLine \nCode:$errorCode",
                 'error' => $e->getMessage(),
             ];
             return response()->json($response,401);
