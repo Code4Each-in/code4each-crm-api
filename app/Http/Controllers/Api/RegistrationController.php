@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\PersonalAccessTokenResult;
+use Illuminate\Support\Str; 
 
 class RegistrationController extends Controller
 {
@@ -24,11 +25,11 @@ class RegistrationController extends Controller
             'status' => 400,
         ];
         $validator = Validator::make($request->all(), [
-            'company_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            // 'company_name' => 'required|string|max:255',
+            // 'description' => 'nullable|string',
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'phone' => 'required',
+            // 'phone' => 'required',
             'password' => 'required',
         ], [
             'email.unique' => 'This email is already in use, please try with some other email address.',
@@ -42,17 +43,19 @@ class RegistrationController extends Controller
             DB::beginTransaction();
 
             $agencyObj = new Agency();
-            $agencyObj->name = $validate['company_name'];
-            if (!empty($validate['description'])) {
-                $agencyObj->description = $validate['description'];
-            }
+            $agencyObj->name = 'Agency_' . Str::upper(Str::random(6));
+            // $agencyObj->name = $validate['company_name'];
+            $agencyObj->description = 'Auto-generated agency description'; 
+            // if (!empty($validate['description'])) {
+            //     $agencyObj->description = $validate['description'];
+            // }
             $agencyObj->save();
 
             $userObj = new User();
             $userObj->agency_id = $agencyObj->id;
             $userObj->name = $validate['name'];
             $userObj->email = $validate['email'];
-            $userObj->phone = $validate['phone'];
+            // $userObj->phone = $validate['phone'];
             $userObj->role = "admin";
             $userObj->user_type = "user";
             $userObj->password = Hash::make($validate['password']);
