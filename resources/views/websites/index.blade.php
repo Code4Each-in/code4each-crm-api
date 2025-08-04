@@ -19,6 +19,7 @@
                                     <th>Component</th>
                                     <th>Status</th>
                                     <th>Preview</th>
+                                    <th>Preview Link</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -39,6 +40,15 @@
                                         <td>
                                             @if ($template['preview'])
                                             <img src="{{ asset('storage/' . $template['preview']) }}" height="70" width="120" alt="Preview Image">
+                                            @else
+                                                ---
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($template['previewLink'])
+                                                <a href="{{ $template['previewLink'] }}" target="_blank" title="Preview Link">
+                                                    <i class="fa fa-link fa-fw"></i> 
+                                                </a>
                                             @else
                                                 ---
                                             @endif
@@ -113,6 +123,11 @@
                             </select>
                             <div class="text-danger component-error"></div>
                     </div>
+                    <div class="mb-3">
+                        <label for="previewLink" class="form-label">Preview Link<span class="text-danger previewLink-asterisk">*</span></label>
+                        <input type="text" class="form-control" id="previewLink" name="previewLink">
+                        <div class="text-danger previewLink-error"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -133,7 +148,7 @@
             </div>
             <form id="editThemeForm" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="editTemplateId" value="{{ $template['id'] ?? '' }}">
+                    <input type="hidden" name="id" id="editTemplateId" value="">
                     <div class="mb-3">
                         <label for="editTemplateName" class="form-label">Template Name<span class="text-danger editTemplateName-asterisk">*</span></label>
                         <input type="text" class="form-control" id="editTemplateName" name="templateName">
@@ -151,7 +166,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="editPreviewImage" class="form-label">Preview Image<span class="text-danger editPreviewImage-asterisk">*</span></label>
-                        <input type="file" class="form-control" id="editPreviewImage" name="previewImage" accept="image/*">
+                        <input type="file" class="form-control" id="editPreviewImage" name="previewimage" accept="image/*">
                         <div class="text-danger editPreviewImage-error"></div>
                     </div>
                     <div class="mb-3">
@@ -180,6 +195,11 @@
                             @endforeach
                         </select>
                         <div class="text-danger editComponent-error"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPreviewLink" class="form-label">Preview Link<span class="text-danger editPreviewLink-asterisk">*</span></label>
+                        <input type="text" class="form-control" id="editPreviewLink" name="previewLink">
+                        <div class="text-danger editPreviewLink-error"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -219,6 +239,7 @@ $(document).ready(function() {
         $('#addThemeForm')[0].reset(); 
         $('.templateName-error').text(''); 
         $('.category-error').text(''); 
+        $('.previewLink-error').text(''); 
         $('.previewImage-error').text(''); 
         $('.status-error').text(''); 
         $('.component-error').text(''); 
@@ -227,6 +248,7 @@ $(document).ready(function() {
     $('#editThemeModal').on('hidden.bs.modal', function() {
         $('.editTemplateName-error').text(''); 
         $('.editCategory-error').text(''); 
+        $('.editPreviewLink-error').text(''); 
         $('.editPreviewImage-error').text(''); 
         $('.editStatus-error').text(''); 
         $('.editComponent-error').text(''); 
@@ -266,6 +288,7 @@ $(document).ready(function() {
     $('body').on('click', '.edit-template', function(e) {
         e.preventDefault();
         let templateId = $(this).data('id');
+        $("#editTemplateId").val(templateId);
         $.ajax({
             url: '/template/' + templateId + '/edit',
             type: 'GET',
@@ -273,13 +296,12 @@ $(document).ready(function() {
                 console.log(response.template);
                 let template = response.template;
                 let components = response.components;
-                console.log('templatedata :- ', template);
-                console.log('componentsdata :- ', components);
                 $('#editTemplateName').val(template.template_name);
                 $('#editCategory').val(template.category_id.split(',')).trigger('change');
-                $('#edituploadedPreview').attr('src', template.featured_image);
+                $('#edituploadedPreview').attr('src', 'storage/' + template.featured_image);
                 $('#editStatus').val(template.status).trigger('change');
                 $('#editComponent').val(components.map(component => component.component_unique_id)).trigger('change'); 
+                $('#editPreviewLink').val(template.preview_link);
                 $('#editThemeModal').modal('show');
             }
         });
@@ -290,8 +312,8 @@ $(document).ready(function() {
     $('#editThemeForm').on('submit', function(e) {
     e.preventDefault();
     let templateId = $('#editTemplateId').val();
-    console.log(templateId);
     let formData = new FormData(this);
+
         $.ajax({
             url: "/template/" + templateId, 
             type: "POST",

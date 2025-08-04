@@ -14,8 +14,15 @@ class WebsiteTemplateComponent extends Model
         'component_unique_id',
         'position',
     ];
+    
     public function component()
     {
         return $this->belongsTo(Component::class, 'component_unique_id', 'component_unique_id');
+    }
+
+    public function componentDetail()
+    {
+            return $this->hasOne(Component::class, 'component_unique_id', 'component_unique_id');
+    
     }
 }

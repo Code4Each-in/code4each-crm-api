@@ -12,13 +12,14 @@ class WebsiteTemplate extends Model
     protected $fillable = [
         'template_name',
         'category_id',
+        'preview_link',
         'featured_image',
         'status',
     ];
 
     public function components()
     {
-        return $this->hasMany(WebsiteTemplateComponent::class, 'template_id');
+        return $this->hasMany(WebsiteTemplateComponent::class, 'template_id', 'id');
     }
 
     public function componentDetails()

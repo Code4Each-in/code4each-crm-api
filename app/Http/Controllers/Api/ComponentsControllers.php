@@ -33,7 +33,6 @@ class ComponentsControllers extends Controller
 
     public function agencyWebsiteDetails(Request $request)
     {
-   
         $response = [
             'success' => false,
             'status' => 400,
@@ -122,9 +121,11 @@ class ComponentsControllers extends Controller
                 $dataToSend['city'] = $agencyWebsiteDetails->city;
                 $dataToSend['country'] = $agencyWebsiteDetails->country;
                 $dataToSend['pincode'] = $agencyWebsiteDetails->pin;
+                
                 if (isset($validate['template_id'])) {
                     $template_id = $validate['template_id'];
                 }
+
                     $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id);
 
                 if ($result['success'] == true && $result['response']['status'] == 200) {
@@ -138,8 +139,10 @@ class ComponentsControllers extends Controller
                     /* Worked on CurrentPlan and PlanLog Start */
                     // Check if both agency_id and website_id are not null and not empty
                     if (!empty($agency_id) && !empty($websitesData->id)) {   
+                       
                         $plan_id = Plan::where('razor_id', 'free_plan')->first()->id;
                         // Create a new current_plan record
+
                         $CurrentPlan = CurrentPlan::create([
                             'agency_id' => $agency_id,
                             'website_id' => $websitesData->id,
@@ -158,6 +161,7 @@ class ComponentsControllers extends Controller
                             'plan_id' => $plan_id,
                         ]);
                     }
+
                      /* Worked on CurrentPlan and PlanLog End */
                      
                     // send mail to user
@@ -271,6 +275,7 @@ class ComponentsControllers extends Controller
                 }
 
             }
+            
             if($logo){
                 $uploadLogo =  $this->uploadLogoToWordpress($agency_id, $websiteUrl);
             }
@@ -306,14 +311,19 @@ class ComponentsControllers extends Controller
                         ->select('component_id', 'name', 'type', 'path', 'version')
                         ->get(),
                 ];
-                if ($component['type'] === 'header') {
-                    $componentData['component_detail']['position'] = 1;
-                } elseif ($component['type'] === 'footer') {
-                    $componentData['component_detail']['position'] = count($components);
-                } else {
-                    $componentData['component_detail']['position'] = $position + 1;
-                    $position++;
+                if(isset($component['template_id'])){
+                    $componentData['component_detail']['position'] = $component['position'];
+                }else{
+                    if ($component['type'] === 'header') {
+                        $componentData['component_detail']['position'] = 1;
+                    } elseif ($component['type'] === 'footer') {
+                        $componentData['component_detail']['position'] = count($components);
+                    } else {
+                        $componentData['component_detail']['position'] = $position + 1;
+                        $position++;
+                    }
                 }
+               
                 $postUrl = $websiteUrl . 'wp-json/v1/component';
                 $componentResponse = Http::post($postUrl, $componentData);
                 if ($componentResponse->successful()) {
@@ -366,7 +376,6 @@ class ComponentsControllers extends Controller
                 }
             }
         }
-        
         return $components;
     }
 
@@ -381,13 +390,16 @@ class ComponentsControllers extends Controller
     private function getTemplateComponent($template_id)
     {
         if ($template_id) {
-            return WebsiteTemplateComponent::join('website_templates', 'website_templates_components.template_id', '=', 'website_templates.id')
+            return Component::join('website_templates_components', 'components_crm.component_unique_id', '=', 'website_templates_components.component_unique_id')
+                ->join('website_templates', 'website_templates_components.template_id', '=', 'website_templates.id')
                 ->where('website_templates_components.template_id', $template_id)
                 ->where('website_templates.status', 'active')
+                ->select('components_crm.*') // Select all columns from components_crm
                 ->get()
                 ->toArray();
         }
     }
+    
     
     public function regenerateComponents(Request $request)
     {
@@ -666,13 +678,12 @@ class ComponentsControllers extends Controller
         ];
 
         try {
-            $websiteTemplates = WebsiteTemplate::where('status', 'active')->get();
+            $websiteTemplates = WebsiteTemplate::where('status', 'active')
+            ->with(['components.componentDetail']) 
+            ->get();
+        
             if ($websiteTemplates->isEmpty()) {
                 return response()->json(['message' => 'No templates found.'], 404);
-            }
-
-            foreach ($websiteTemplates as $template) {
-                $template->components = WebsiteTemplateComponent::where('template_id', $template->id)->get();
             }
 
             $response = [

@@ -66,7 +66,7 @@ return [
          
         'mysql_wordpress' => [
             'driver' => 'mysql',
-            'host' => '193.203.166.194', // Static database host
+            'host' => '127.0.0.1', // Static database host
             'port' => '3306', // Static port
             'database' => 'u170671405_zL6IC', // Static database name (same as DB_NAME in WordPress)
             'username' => 'u170671405_P6Dk0', // Static database user (same as DB_USER in WordPress)

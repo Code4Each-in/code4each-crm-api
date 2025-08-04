@@ -21,6 +21,7 @@ class WebsiteController extends Controller
                 'id' => $template->id,
                 'template_name' => $template->template_name,
                 'categories' => $template->category_id,
+                'previewLink' => $template->preview_link,
                 'status' => $template->status,
                 'preview' => $template->featured_image,
                 'components' => $template->components->map(function ($component) {
@@ -33,11 +34,12 @@ class WebsiteController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {   
         $request->validate([
             'templateName' => 'required|string|max:255',
             'category' => 'required|array',
             'category.*' => 'exists:website_categories,name',
+            'previewLink' => 'required|string|max:255',
             'previewImage' => 'required|image',
             'status' => 'required|in:draft,testing,active,deactive',
             'component' => 'required|array',
@@ -51,12 +53,12 @@ class WebsiteController extends Controller
             $uploadedFile->storeAs('public/WebsiteTemplates', $filename);
             $imagepath = 'WebsiteTemplates/' . $filename;
         }
-    
 
         // Insert data into Website Templates table
         $template = WebsiteTemplate::create([
             'template_name' => $request->input('templateName'),
             'category_id' => $categories,
+            'preview_link' => $request->input('previewLink'),
             'featured_image' => $imagepath,
             'status' => $request->input('status'),
         ]);
@@ -89,6 +91,7 @@ class WebsiteController extends Controller
 
     public function update(Request $request, $id)
     {
+     
         $template = WebsiteTemplate::findOrFail($id);
     
         // Validate the request data
@@ -96,6 +99,7 @@ class WebsiteController extends Controller
             'templateName' => 'required|string|max:255',
             'category' => 'required|array',
             'category.*' => 'exists:website_categories,name',
+            'previewLink' => 'nullable|string|max:255',
             'status' => 'required|in:draft,testing,active,deactive',
             'component' => 'required|array',
             'component.*' => 'exists:components_crm,component_unique_id',
@@ -112,6 +116,7 @@ class WebsiteController extends Controller
             $uploadedFile->storeAs('public/WebsiteTemplates', $filename);
             $template->featured_image = 'WebsiteTemplates/' . $filename;
         }
+        $template->preview_link = $validated['previewLink'];
  
         $template->save();
         $newComponentIds = $validated['component'];
