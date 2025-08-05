@@ -49,18 +49,20 @@ class VerifyEmail extends Notification
     {
         $verificationUrl = $this->verificationUrl($notifiable);
         
-        Config::set('app.url', 'https://beta.speedysites.in');
+        Config::set('app.url', 'https://app.speedysites.in');
 
+        // Pass variables to the blade view
+        $viewData = [
+            'greeting' => $this->messages['greeting-text'] ?? 'Hello',
+            'verificationUrl' => $verificationUrl,
+            'notifiable' => $notifiable,
+        ];
+
+        // Return a mail message with rendered view
         return (new MailMessage)
-            ->greeting(isset($this->messages['greeting-text']) ? $this->messages['greeting-text'] : 'Hello')
-            ->subject('Confirmation Email for Registering On CRM Portal')
-            ->line('Congratulations and welcome to CRM! We \'re thrilled to have you as a new member of our community.')
-            ->line('To get started, please click on the link below to confirm your email address and activate your account:')
-            ->action('Verify Email Address', $verificationUrl)
-            ->line('If you have Already Verified Your Account, please ignore this email. Your account will not be activated unless you confirm your email address.');
-
+            ->subject('SpeedySites - Verify Your Email Address')
+            ->view('emails.verify_email', $viewData);
     }
-
 
     protected function verificationUrl($notifiable)
     {
