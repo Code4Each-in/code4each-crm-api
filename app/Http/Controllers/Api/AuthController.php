@@ -12,49 +12,56 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $response = [
-            'success' => false,
-            'status' => 400,
-        ];
+        try {
+            $response = [
+                'success' => false,
+                'status' => 400,
+            ];
 
-        $validator = Validator::make($request->all(), [
-            'email' => 'required',
-            'password' => 'required',
-        ]);
+            $validator = Validator::make($request->all(), [
+                'email' => 'required',
+                'password' => 'required',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
+            }
 
-        $credentials = $request->only('email', 'password');
+            $credentials = $request->only('email', 'password');
 
-        $user = User::where('email', $credentials['email'])->first();
+            $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user) {
-            $response['message'] = 'No account found with this email. Please sign up first.';
-            $response['status'] = 404;
-            return response()->json($response, 404);
-        }
+            if (!$user) {
+                $response['message'] = 'No account found with this email. Please sign up first.';
+                $response['status'] = 405;
+                return response()->json($response, 405);
+            }
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $tokenResult = $user->createToken('access-token');
-            $token = $tokenResult->accessToken;
+            if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+                $tokenResult = $user->createToken('access-token');
+                $token = $tokenResult->accessToken;
 
-            $response['success'] = true;
-            $response['status'] = 200;
-            $response['message'] = 'User Login Successfully';
-            $response['token'] = $token;
+                $response['success'] = true;
+                $response['status'] = 200;
+                $response['message'] = 'User Login Successfully';
+                $response['token'] = $token;
 
-            return response()->json($response);
-        } else {
-            $response['message'] = 'Invalid email or password. Please try again.';
-            $response['status'] = 401;
-
-
-            return response()->json($response, 401);
+                return response()->json($response);
+            } else {
+                $response['message'] = 'Invalid email or password. Please try again.';
+                $response['status'] = 401;
+                return response()->json($response, 401);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 500,
+                'message' => 'An internal error occurred. Please try again later.',
+            ], 500);
         }
     }
+
     public function logout()
     {
         $user = Auth::user();

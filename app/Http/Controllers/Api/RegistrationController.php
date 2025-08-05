@@ -109,11 +109,11 @@ class RegistrationController extends Controller
             \Log::error("\nError: $errorMessage\nFile: $errorFile\nLine: $errorLine \nCode:$errorCode");
             $response = [
                 'success' => false,
-                'status' => 400,
+                'status' => 500,
                 'message' => 'An error occurred while processing your request.',
                 'error' => $e->getMessage(),
             ];
-            return response()->json($response,401);
+            return response()->json($response, 500); 
         }
     }
 }
