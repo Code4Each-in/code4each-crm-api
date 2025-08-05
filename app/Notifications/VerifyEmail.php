@@ -9,6 +9,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Crypt;
+
 
 class VerifyEmail extends Notification
 {
@@ -66,9 +68,10 @@ class VerifyEmail extends Notification
 
     protected function verificationUrl($notifiable)
     {
+        $encryptedId = Crypt::encryptString($notifiable->getKey());
         // collect and sort url params
         $params = [
-            'id' => $notifiable->getKey(),
+            'id' => $encryptedId,
             'expires' => Carbon::now()
                 ->addMinutes(Config::get('auth.verification.expire', 60))
                 ->getTimestamp(),
