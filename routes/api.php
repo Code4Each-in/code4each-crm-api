@@ -72,7 +72,7 @@ Route::middleware('auth:api')->group(function () {
     //End Unverified Routes
 
     //Email Verified Routes
-    Route::middleware('verified')->group(function () {
+    Route::middleware('verifiedEmail')->group(function () {
     Route::post('/agency-website-details',[ComponentsControllers::class,'agencyWebsiteDetails']);
     Route::get('/agency-website-info/{agency_id}',[DashboardController::class,'getAgencyWebsiteInfo']);
     Route::get('/get-website-categories',[DashboardController::class,'getWebsiteCategories']);
