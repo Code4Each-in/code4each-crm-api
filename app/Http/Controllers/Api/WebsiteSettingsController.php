@@ -24,7 +24,17 @@ class WebsiteSettingsController extends Controller
             return response()->json(["error" => "website id is required."],400);
         }
         $websiteData = Websites::with(['agencyWebsiteDetail', 'agencyWebsiteDetail.websiteCategory'])->where('id', $website_id)->first();
+
+        if (!$websiteData) {
+            return response()->json(["error" => "Website not found."], 404);
+        }
+
         $agencyWebsiteDetail = $websiteData->agencyWebsiteDetail;
+
+        if (!$agencyWebsiteDetail) {
+            return response()->json(["error" => "Currently website is not assigned."], 400);
+        }
+
         $websiteCategoryName = $agencyWebsiteDetail->websiteCategory ? $agencyWebsiteDetail->websiteCategory->name : null;
         if(!$agencyWebsiteDetail){
             return response()->json(["error" => "currently website is not assigned."],400);
