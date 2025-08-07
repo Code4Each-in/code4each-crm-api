@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+
 
 class VerificationController extends Controller
 {
     public function verify($user_id, Request $request) {
+        $decryptedId = Crypt::decryptString($user_id);
+
 
         $response = [
             'success' => false,
@@ -19,7 +23,7 @@ class VerificationController extends Controller
             return response()->json(["error" => "Invalid/Expired URL provided."], 401);
         }
 
-        $user = User::findOrFail($user_id);
+        $user = User::findOrFail($decryptedId);
 
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
