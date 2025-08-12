@@ -62,14 +62,15 @@ class ComponentsControllers extends Controller
             $websitesData = Websites::where('assigned', null)->first();
 
             $websiteDomain = $websitesData->website_domain ?? null;
-            dd($websiteDomain);
+            print_r($websiteDomain);
             if(!$websitesData){
                 $response['message'] = 'Currently We are Getting Huge Number Of Requests. Well Notified You Soon When Available.';
                 // return response()->json(['error' => 'An Error occur While Creating Your site. Domain may not exists related to your business name. Ask for the Support.'],500);
             }
 
             $wordpressDatabase = $this->getWordPressData($websitesData->website_domain, $websitesData->id, $validate['agency_id']);
-            dd($wordpressDatabase);
+            print_r($wordpressDatabase);
+            die("test");
 
             $phone = null;
             if(isset($validate['phone'])){
@@ -707,7 +708,7 @@ class ComponentsControllers extends Controller
     {
         try {
             $config = WebsiteDatabase::where('website_id', null)->first();
-            dd($config);
+            print_r($config);
             if (!$config) {
                 return response()->json(['error' => 'Configuration not found for this domain'], 404);
             }
@@ -753,7 +754,7 @@ class ComponentsControllers extends Controller
             $config->website_id = $website_id; 
             $config->agency_id = $agency_id;  
             $config->website_domain = $newDomain; 
-            dd($config->website_domain);
+            print_r($config->website_domain);
             $config->save(); 
 
         } catch (\Exception $e) {
