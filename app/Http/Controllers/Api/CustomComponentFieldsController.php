@@ -32,7 +32,11 @@ class CustomComponentFieldsController extends Controller
         $componentUniqueId =  $validated['component_unique_id'];
         $website_url =  $validated['website_url'];
 
-        $component = Component::with('formFields')->where('component_unique_id', $componentUniqueId)->select('id', 'type', 'category')->first();
+        $component = Component::with([
+            'formFields' => function ($query) {
+                $query->orderBy('field_position', 'asc');
+            }
+        ])->where('component_unique_id', $componentUniqueId)->select('id', 'type', 'category')->first();
 
         $componentFormFields = $component->formFields;
 
