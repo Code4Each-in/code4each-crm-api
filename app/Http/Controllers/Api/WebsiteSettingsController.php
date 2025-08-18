@@ -164,7 +164,8 @@ class WebsiteSettingsController extends Controller
                 "state" => ["value" => $validated['state']],
                 "city" => ["value" => $validated['city']],
                 "country" => ["value" => $validated['country']],
-                "pincode" => ["value" => $validated['zip']]
+                "pincode" => ["value" => $validated['zip']],
+                "description" => ["value" => $description],
             ];
             $updateAgencyDetailResponse = $this->wordpressComponentClass->updateGlobalVariables($website_url , $data);
             if($updateAgencyDetailResponse['success'] == false){
