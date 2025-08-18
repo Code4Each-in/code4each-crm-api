@@ -121,6 +121,7 @@ class ComponentsControllers extends Controller
                 $dataToSend['city'] = $agencyWebsiteDetails->city;
                 $dataToSend['country'] = $agencyWebsiteDetails->country;
                 $dataToSend['pincode'] = $agencyWebsiteDetails->pin;
+                $dataToSend['description'] = $agencyWebsiteDetails->description;
                 
                 if (isset($validate['template_id'])) {
                     $template_id = $validate['template_id'];
@@ -267,7 +268,8 @@ class ComponentsControllers extends Controller
                     "state" => ["value" => $Data["state"]],
                     "city" => ["value" => $Data["city"]],
                     "country" => ["value" => $Data["country"]],
-                    "pincode" => ["value" => $Data["pincode"]]
+                    "pincode" => ["value" => $Data["pincode"]],
+                    "description" => ["value" => $Data["description"]]
                 ];
                 $addWebsitesGlobalVariablesResponse = Http::post($addWebsitesGlobalVariablesUrl,$data);
                 if(!$addWebsitesGlobalVariablesResponse->successful()){
