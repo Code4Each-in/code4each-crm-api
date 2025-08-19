@@ -49,7 +49,7 @@ class CustomSectionsController extends Controller
                 'component_dependencies' => $component->dependencies ? $component->dependencies->toArray() : null,
             ];
     
-                $postUrl = $websiteUrl . '/wp-json/v1/add-new-component';
+                $postUrl = $websiteUrl . '/wp-json/v1/component';
                 $addComponentSectionResponse = Http::post($postUrl, $componentArray);
                 if ($addComponentSectionResponse->successful()) {
                     $data['response'] = $addComponentSectionResponse->json();
