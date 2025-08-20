@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\CustomSectionsController;
 use Google\Service\Monitoring\Custom;
 use App\Http\Controllers\Api\WordpressMenusController;
 use App\Http\Controllers\Api\SubscriptionPaymentController;
+use App\Http\Controllers\Api\WordpressCustomFormController;
 
 
 
@@ -117,6 +118,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('delete-uploaded-images',[ImageController::class,'deleteUploadedImages']);
 
     Route::get('/website-templates', [ComponentsControllers::class, 'getWebsiteTemplates']);
+
+    Route::post('/create-CustomFromFields',[WordpressCustomFormController::class,'postWordpressFormField']);
 
     });
     //End of Verified Routes
