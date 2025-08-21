@@ -117,4 +117,41 @@ class WordpressCustomFormController extends Controller
 
         return response()->json($response, $response['status']);
     }
+
+    /**
+     * THIS METHOD IS FOR DELETING A WORDPRESS FORM
+     */
+    public function deleteWordpressForm(Request $request) {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'website_domain' => 'required|url',
+            'form_id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['response' => $validator->errors(), 'status' => 400, 'success'=> false], 400);
+        }
+
+        $validatedData = $validator->validated();
+        
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/delete-form';
+        $deleteResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($deleteResponse->successful()) {
+            $response['response'] = $deleteResponse->json()['success'];
+            $response['status'] = $deleteResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $deleteResponse->json();
+            $response['status'] = 400;
+            $response['success'] = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
 }
