@@ -13,7 +13,7 @@ class WordpressCustomFormController extends Controller
      * THIS METHOD IS FOR FETCHING WORDPRESS CUSTOM FORM DATA
      */
     public function getWordpressForms(Request $request) {
-        $websiteUrl = $request->input('website_url');
+        $websiteUrl = $request->input('website_domain');
         $getApiUrl = $websiteUrl . '/wp-json/v1/get-forms';
         $getFormsResponse = Http::get($getApiUrl);
         
@@ -74,6 +74,44 @@ class WordpressCustomFormController extends Controller
         } else {
             $response['response'] = $wpResponse->json() ?? 'Failed to post';
             $response['status'] = $wpResponse->status() ?? 400;
+            $response['success'] = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
+
+    /**
+     * THIS METHOD IS FOR UPDATING THE STATUS OF A WORDPRESS FORM
+     */
+    public function updateWordpressFormStatus(Request $request) {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'website_domain' => 'required|url',
+            'form_id' => 'required|integer',
+            'status' => 'required|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['response' => $validator->errors(), 'status' => 400, 'success'=> false], 400);
+        }
+
+        $validatedData = $validator->validated();
+        
+        $websiteUrl = $request->input('website_url');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/update-form-status';
+        $updateResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($updateResponse->successful()) {
+            $response['response'] = $updateResponse->json()['success'];
+            $response['status'] = $updateResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $updateResponse->json();
+            $response['status'] = 400;
             $response['success'] = false;
         }
 

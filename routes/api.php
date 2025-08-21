@@ -122,7 +122,7 @@ Route::middleware('auth:api')->group(function () {
     // ROUTES FOR WORDPRESS CUSTOM FORM FIELDS
     Route::get('/get-forms',[WordpressCustomFormController::class,'getWordpressForms']);
     Route::post('/create-customfromfields',[WordpressCustomFormController::class,'postWordpressFormField']);
-
+    Route::post('/update-form-status',[WordpressCustomFormController::class,'updateWordpressFormStatus']);
     });
     //End of Verified Routes
   
