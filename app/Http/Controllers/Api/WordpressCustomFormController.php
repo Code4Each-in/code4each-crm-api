@@ -63,7 +63,7 @@ class WordpressCustomFormController extends Controller
 
         $validatedData = $validator->validated();
 
-        $websiteUrl = $request->input('website_url');
+        $websiteUrl = $request->input('website_domain');
         $postApiUrl = $websiteUrl . '/wp-json/v1/add-formfields';
         $wpResponse = Http::post($postApiUrl, $validatedData);
 
@@ -92,7 +92,7 @@ class WordpressCustomFormController extends Controller
         $validator = Validator::make($request->all(), [
             'website_domain' => 'required|url',
             'form_id' => 'required|integer',
-            'status' => 'required|boolean',
+            'status' => 'required|string|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -101,7 +101,7 @@ class WordpressCustomFormController extends Controller
 
         $validatedData = $validator->validated();
         
-        $websiteUrl = $request->input('website_url');
+        $websiteUrl = $request->input('website_domain');
         $postApiUrl = $websiteUrl . '/wp-json/v1/update-form-status';
         $updateResponse = Http::post($postApiUrl, $validatedData);
 
