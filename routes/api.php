@@ -118,8 +118,10 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('delete-uploaded-images',[ImageController::class,'deleteUploadedImages']);
 
     Route::get('/website-templates', [ComponentsControllers::class, 'getWebsiteTemplates']);
-
-    Route::post('/create-CustomFromFields',[WordpressCustomFormController::class,'postWordpressFormField']);
+    
+    // ROUTES FOR WORDPRESS CUSTOM FORM FIELDS
+    Route::get('/get-forms',[WordpressCustomFormController::class,'getWordpressForms']);
+    Route::post('/create-customfromfields',[WordpressCustomFormController::class,'postWordpressFormField']);
 
     });
     //End of Verified Routes

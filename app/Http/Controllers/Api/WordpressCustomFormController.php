@@ -9,6 +9,31 @@ use Illuminate\Support\Facades\Validator;
 
 class WordpressCustomFormController extends Controller
 {
+    /**
+     * THIS METHOD IS FOR FETCHING WORDPRESS CUSTOM FORM DATA
+     */
+    public function getWordpressForms(Request $request) {
+        $websiteUrl = $request->input('website_url');
+        $getApiUrl = $websiteUrl . '/wp-json/v1/get-forms';
+        $getFormsResponse = Http::get($getApiUrl);
+        
+        if ($getFormsResponse->successful()) {
+            $response['response'] =$getFormsResponse->json()['data'];
+            $response['status'] = $getFormsResponse->status();
+            $response['success'] = true;
+        }
+            else{
+                $response['response'] = $getFormsResponse->json();
+                $response['status'] = 400;
+                $response['success'] = false;
+            }
+        return $response;
+    
+    }
+
+    /**
+     * THIS METHOD IS FOR CREATING WORDPRESS CUSTOM FORM FIELDS
+     */
     public function postWordpressFormField(Request $request) {
         $response = [
             'success' => false,
