@@ -124,7 +124,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/create-customfromfields',[WordpressCustomFormController::class,'postWordpressFormField']);
     Route::post('/update-form-status',[WordpressCustomFormController::class,'updateWordpressFormStatus']);
     Route::delete('/delete-form',[WordpressCustomFormController::class,'deleteWordpressForm']);
-    Route::post('/update-wordpress-formfields', [WordpressCustomFormController::class, 'updateWordpressFormField']);
+    Route::post('/update-customfields', [WordpressCustomFormController::class, 'updateWordpressFormField']);
     });
     //End of Verified Routes
   
