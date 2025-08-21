@@ -154,4 +154,55 @@ class WordpressCustomFormController extends Controller
 
         return response()->json($response, $response['status']);
     }
+
+    /**
+     * THIS METHOD IS FOR UPDATING WORDPRESS FORM FIELDS
+     */
+    public function updateWordpressFormField(Request $request)
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        // Validation
+        $validator = Validator::make($request->all(), [
+            'website_domain' => 'required|url',
+            'form_id' => 'required|integer', 
+            'name' => 'required|string',
+            'fields' => 'required|array|min:1',
+            'fields.*.type' => 'required|string',
+            'fields.*.label' => 'required|string',
+            'fields.*.placeholder' => 'nullable|string',
+            'fields.*.required' => 'nullable|boolean',
+            'fields.*.position' => 'nullable|integer',
+            'fields.*.options' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status' => 400,
+                'success' => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/update-formfields'; 
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status'] = $wpResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to update';
+            $response['status'] = $wpResponse->status() ?? 400;
+            $response['success'] = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
+
 }
