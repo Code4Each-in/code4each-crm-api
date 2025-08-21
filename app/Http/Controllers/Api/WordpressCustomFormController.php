@@ -189,7 +189,7 @@ class WordpressCustomFormController extends Controller
 
         $validatedData = $validator->validated();
         $websiteUrl = $request->input('website_domain');
-        $postApiUrl = $websiteUrl . '/wp-json/v1/update-formfields'; 
+        $postApiUrl = $websiteUrl . '/wp-json/v1/update-customfields'; 
         $wpResponse = Http::post($postApiUrl, $validatedData);
 
         if ($wpResponse->successful()) {
