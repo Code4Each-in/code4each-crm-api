@@ -190,6 +190,10 @@ class WordpressComponentController extends Controller
             if (isset($data['meta2'])) {
                 $dataToSend[$data['field_name']]['meta2'] = $data['meta2'];
             }
+
+            if (isset($data['formId'])) {
+                $dataToSend[$data['field_name']]['formId'] = $data['formId'];
+            }
         }
 
 
