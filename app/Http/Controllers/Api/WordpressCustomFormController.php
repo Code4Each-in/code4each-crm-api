@@ -212,21 +212,60 @@ class WordpressCustomFormController extends Controller
         $websiteUrl = $request->input('website_domain');
         $form_id = $request->input('form_id');
         $getApiUrl = $websiteUrl . '/wp-json/v1/get-form-submissions';
-        $getFormsResponse = Http::post($getApiUrl, [
+        $getFormsResponse = Http::get($getApiUrl, [
             'form_id' => $form_id
         ]);
 
         if ($getFormsResponse->successful()) {
-            $response['response'] =$getFormsResponse->json()['data'];
-            $response['status'] = $getFormsResponse->status();
-            $response['success'] = true;
-        }
-            else{
-                $response['response'] = $getFormsResponse->json();
-                $response['status'] = 400;
-                $response['success'] = false;
+            $data = $getFormsResponse->json();  
+            $submissionsFlat = $data['submissions'] ?? [];
+
+            // Step 1: Group fields by submission_id
+            $groupedSubmissions = [];
+            $allFields = []; // for dynamic headers
+
+            foreach ($submissionsFlat as $item) {
+                $subId = $item['submission_id'];
+                $groupedSubmissions[$subId]['ID'] = $subId;
+
+                // Use field_name as key
+                $fieldName = $item['field_name'];
+                $fieldValue = $item['field_value'];
+
+                $groupedSubmissions[$subId]['fields'][$fieldName] = $fieldValue;
+                $allFields[$fieldName] = true;
             }
-        return $response;
+
+            $headers = array_keys($allFields);
+
+            // Step 2: Build row-wise submissions
+            $rows = [];
+            foreach ($groupedSubmissions as $subId => $submission) {
+                $row = [
+                    'ID' => $submission['ID'],
+                ];
+
+                foreach ($headers as $field) {
+                    $row[$field] = $submission['fields'][$field] ?? '';
+                }
+                $rows[] = $row;
+            }
+
+            $response = [
+                'headers' => array_merge(['ID'], $headers),
+                'rows'    => $rows,
+                'status'  => $getFormsResponse->status(),
+                'success' => true,
+            ];
+        } else {
+            $response = [
+                'response' => $getFormsResponse->json(),
+                'status'   => 400,
+                'success'  => false,
+            ];
+        }
+
+        return response()->json($response);
     }
 
 }
