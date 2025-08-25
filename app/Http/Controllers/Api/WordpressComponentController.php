@@ -211,23 +211,21 @@ class WordpressComponentController extends Controller
         return $response;
     }
 
-    public function getInsertedComponentFields($websiteUrl, $allFields)
-    {
-        $bodyJson = json_encode(
-            $allFields
-        );
-        $getInsertedComponentFieldsUrl = $websiteUrl . '/wp-json/v1/get-component-fields';
-        $componentFieldsResponse = Http::withBody($bodyJson, 'application/json')->get($getInsertedComponentFieldsUrl);
-        if ($componentFieldsResponse->successful()) {
-            $response['response'] = $componentFieldsResponse->json();
-            $response['status'] = $componentFieldsResponse->status();
-            $response['success'] = true;
-        } else {
-            $response['response'] = $componentFieldsResponse->json();
-            $response['status'] = 400;
-            $response['success'] = false;
-        }
-        return $response;
+    public function getInsertedComponentFields($websiteUrl, $allFields) { 
+        $getApiUrl = $websiteUrl . '/wp-json/v1/get-component-fields'; 
+        $componentFieldsResponse = Http::get($getApiUrl, [ 
+            'fields' => json_encode($allFields) 
+        ]); 
+        if ($componentFieldsResponse->successful()) { 
+            return [ 'response' => $componentFieldsResponse->json(), 
+            'status' => $componentFieldsResponse->status(), 
+            'success' => true ]; 
+        } else { 
+            return [ 'response' => $componentFieldsResponse->json(), 
+            'status' => 400, 
+            'success' => false ]; 
+        } 
+        
     }
 
     public function updateComponentPosition($websiteUrl, $data)

@@ -55,7 +55,7 @@ class CustomComponentFieldsController extends Controller
                 "value"=> null,
                 "meta1"=> null,
                 "meta2"=> null,
-
+                "form_id"=> null,
             ];
 
 
@@ -81,6 +81,7 @@ class CustomComponentFieldsController extends Controller
                         $formField['value'] = $replacementArray[$field_name]['value'];
                         $formField['meta1'] = $replacementArray[$field_name]['meta1'];
                         $formField['meta2'] = $replacementArray[$field_name]['meta2'];
+                        $formField['form_id'] = $replacementArray[$field_name]['form_id'] ?? null;
                     }
                     return $formField;
                 }, $formFieldsArray);
