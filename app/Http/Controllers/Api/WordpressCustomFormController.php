@@ -205,4 +205,28 @@ class WordpressCustomFormController extends Controller
         return response()->json($response, $response['status']);
     }
 
+    /**
+     * THIS METHOD IS FOR FETCHING WORDPRESS FORM ENTRIES/SUBMISSIONS
+     */
+    public function getWordpressFormEntries(Request $request) {
+        $websiteUrl = $request->input('website_domain');
+        $form_id = $request->input('form_id');
+        $getApiUrl = $websiteUrl . '/wp-json/v1/get-form-submissions';
+        $getFormsResponse = Http::post($getApiUrl, [
+            'form_id' => $form_id
+        ]);
+
+        if ($getFormsResponse->successful()) {
+            $response['response'] =$getFormsResponse->json()['data'];
+            $response['status'] = $getFormsResponse->status();
+            $response['success'] = true;
+        }
+            else{
+                $response['response'] = $getFormsResponse->json();
+                $response['status'] = 400;
+                $response['success'] = false;
+            }
+        return $response;
+    }
+
 }
