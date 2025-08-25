@@ -125,6 +125,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/update-form-status',[WordpressCustomFormController::class,'updateWordpressFormStatus']);
     Route::delete('/delete-form',[WordpressCustomFormController::class,'deleteWordpressForm']);
     Route::post('/update-customfields', [WordpressCustomFormController::class, 'updateWordpressFormField']);
+    Route::get('/get-form-submissions',[WordpressCustomFormController::class,'getWordpressFormEntries']);
     });
     //End of Verified Routes
   
