@@ -222,17 +222,17 @@ class WordpressCustomFormController extends Controller
 
             // Step 1: Group fields by submission_id
             $groupedSubmissions = [];
-            $allFields = []; // for dynamic headers
+            $allFields = [];
 
             foreach ($submissionsFlat as $item) {
                 $subId = $item['submission_id'];
-                $groupedSubmissions[$subId]['ID'] = $subId;
+                $groupedSubmissions[$subId]['submitted_at'] = $item['submitted_at'];
 
                 // Use field_name as key
                 $fieldName = $item['field_name'];
                 $fieldValue = $item['field_value'];
 
-                $groupedSubmissions[$subId]['fields'][$fieldName] = $fieldValue;
+                $groupedSubmissions[$subId][$fieldName] = $fieldValue;
                 $allFields[$fieldName] = true;
             }
 
@@ -240,19 +240,18 @@ class WordpressCustomFormController extends Controller
 
             // Step 2: Build row-wise submissions
             $rows = [];
-            foreach ($groupedSubmissions as $subId => $submission) {
+            foreach ($groupedSubmissions as $submission) {
                 $row = [
-                    'ID' => $submission['ID'],
+                    'submitted_at' => $submission['submitted_at'] ?? null, 
                 ];
-
                 foreach ($headers as $field) {
-                    $row[$field] = $submission['fields'][$field] ?? '';
+                    $row[$field] = $submission[$field] ?? '---';
                 }
                 $rows[] = $row;
             }
 
             $response = [
-                'headers' => array_merge(['ID'], $headers),
+                'headers' => $headers,
                 'rows'    => $rows,
                 'status'  => $getFormsResponse->status(),
                 'success' => true,
