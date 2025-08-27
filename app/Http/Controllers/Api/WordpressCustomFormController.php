@@ -140,7 +140,7 @@ class WordpressCustomFormController extends Controller
         
         $websiteUrl = $request->input('website_domain');
         $postApiUrl = $websiteUrl . '/wp-json/v1/delete-form';
-        $deleteResponse = Http::post($postApiUrl, $validatedData);
+        $deleteResponse = Http::delete($postApiUrl, $validatedData);
 
         if ($deleteResponse->successful()) {
             $response['response'] = $deleteResponse->json()['success'];
