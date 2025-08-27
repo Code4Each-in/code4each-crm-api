@@ -213,7 +213,9 @@ class WordpressCustomFormController extends Controller
         $form_id = $request->input('form_id');
         $getApiUrl = $websiteUrl . '/wp-json/v1/get-form-submissions';
         $getFormsResponse = Http::get($getApiUrl, [
-            'form_id' => $form_id
+            'form_id' => $form_id,
+            'page'      => $request->input('page', 1),
+            'per_page'  => $request->input('per_page', 10),
         ]);
 
         if ($getFormsResponse->successful()) {
@@ -255,6 +257,10 @@ class WordpressCustomFormController extends Controller
                 'rows'    => $rows,
                 'status'  => $getFormsResponse->status(),
                 'success' => true,
+                'total_pages'       => $data['total_pages'] ?? 1,
+                'total_submissions' => $data['total_submissions'] ?? count($rows),
+                'current_page'      => $data['current_page'] ?? $request->input('page', 1),
+                'per_page'          => $data['per_page'] ?? $request->input('per_page', 10),
             ];
         } else {
             $response = [
@@ -265,6 +271,51 @@ class WordpressCustomFormController extends Controller
         }
 
         return response()->json($response);
+    }
+
+    /**
+     * THIS METHOD IS FOR CREATING EMAIL TEMPLATES
+     */
+    public function createEmailTemplate(Request $request) {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        // Validate form data
+        $validator = Validator::make($request->all(), [
+            'website_domain' => 'required|url',
+            'form_id' => 'required|integer',
+            'subject' => 'required|string',
+            'body' => 'required|string',
+            'secondary_email' => 'nullable|email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status' => 400,
+                'success' => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/create-email-template';
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status'] = $wpResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status'] = $wpResponse->status() ?? 400;
+            $response['success'] = false;
+        }
+
+        return response()->json($response, $response['status']);
     }
 
 }
