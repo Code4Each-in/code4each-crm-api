@@ -763,6 +763,35 @@ class ComponentsControllers extends Controller
             throw new \Exception('Error occurred while updating the domain: ' . $e->getMessage());
         }
     }
+
+    /**
+     * THIS METHOD IS FOR Get Global Variables Values
+    */
+    public function getGlobalVariablesValues()
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+    
+        $websiteUrl = request()->input('website_domain');
+        if(!$websiteUrl){
+            return response()->json(['error' => "website url is required to process this request."],400);
+        }
+        $getGlobalVariablesUrl = $websiteUrl . 'wp-json/v1/global-variables';
+        $getGlobalVariablesResponse = Http::get($getGlobalVariablesUrl);
+            if ($getGlobalVariablesResponse->successful()) {
+                $responseData = $getGlobalVariablesResponse->json();
+                $response['global_variables'] = $responseData["global_variables"] ?? [];
+                $response['status'] = $getGlobalVariablesResponse->status();
+                $response['success'] = true;
+            }else{
+                $response['response'] = $getGlobalVariablesResponse->json();
+                $response['status'] = 400;
+                $response['success'] = false;
+            }
+        return response()->json($response);
+    }
 }
 
 
