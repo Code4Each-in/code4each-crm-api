@@ -95,6 +95,7 @@ class ComponentsControllers extends Controller
                 'description'  => $description,
                 'agency_id' => $validate['agency_id'],
                 'business_name' => $validate['business_name'],
+                'email' => auth()->user()->email,
                 'created_by' => auth()->user()->id,
             ]);
 
@@ -122,6 +123,9 @@ class ComponentsControllers extends Controller
                 $dataToSend['country'] = $agencyWebsiteDetails->country;
                 $dataToSend['pincode'] = $agencyWebsiteDetails->pin;
                 $dataToSend['description'] = $agencyWebsiteDetails->description;
+                $dataToSend['email'] = $agencyWebsiteDetails->email;
+
+                 // If template_id is provided, use it; otherwise, set it to false
                 
                 if (isset($validate['template_id'])) {
                     $template_id = $validate['template_id'];
@@ -269,7 +273,8 @@ class ComponentsControllers extends Controller
                     "city" => ["value" => $Data["city"]],
                     "country" => ["value" => $Data["country"]],
                     "pincode" => ["value" => $Data["pincode"]],
-                    "description" => ["value" => $Data["description"]]
+                    "description" => ["value" => $Data["description"]],
+                    "email" => ["value" => $Data["email"]],
                 ];
                 $addWebsitesGlobalVariablesResponse = Http::post($addWebsitesGlobalVariablesUrl,$data);
                 if(!$addWebsitesGlobalVariablesResponse->successful()){

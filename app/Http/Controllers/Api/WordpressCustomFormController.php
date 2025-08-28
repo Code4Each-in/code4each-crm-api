@@ -51,6 +51,10 @@ class WordpressCustomFormController extends Controller
             'fields.*.required' => 'nullable|boolean',
             'fields.*.position' => 'nullable|integer',
             'fields.*.options' => 'nullable|array',
+            'template' => 'sometimes|array',
+            'template.subject' => 'nullable|string',
+            'template.body' => 'nullable|string',
+            'template.secondary_email' => 'nullable|email',
         ]);
 
         if ($validator->fails()) {
@@ -276,7 +280,76 @@ class WordpressCustomFormController extends Controller
     /**
      * THIS METHOD IS FOR CREATING EMAIL TEMPLATES
      */
-    public function createEmailTemplate(Request $request) {
+    // public function createEmailTemplate(Request $request) {
+    //     $response = [
+    //         'success' => false,
+    //         'status' => 400,
+    //     ];
+
+    //     // Validate form data
+    //     $validator = Validator::make($request->all(), [
+    //         'website_domain' => 'required|url',
+    //         'form_id' => 'required|integer',
+    //         'subject' => 'required|string',
+    //         'body' => 'required|string',
+    //         'secondary_email' => 'nullable|email',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'response' => $validator->errors(),
+    //             'status' => 400,
+    //             'success' => false
+    //         ], 400);
+    //     }
+
+    //     $validatedData = $validator->validated();
+
+    //     $websiteUrl = $request->input('website_domain');
+    //     $postApiUrl = $websiteUrl . '/wp-json/v1/create-email-template';
+    //     $wpResponse = Http::post($postApiUrl, $validatedData);
+
+    //     if ($wpResponse->successful()) {
+    //         $response['response'] = $wpResponse->json();
+    //         $response['status'] = $wpResponse->status();
+    //         $response['success'] = true;
+    //     } else {
+    //         $response['response'] = $wpResponse->json() ?? 'Failed to post';
+    //         $response['status'] = $wpResponse->status() ?? 400;
+    //         $response['success'] = false;
+    //     }
+
+    //     return response()->json($response, $response['status']);
+    // }
+
+    /**
+     * THIS METHOD IS FOR FETCHING SETTING EMAIL OPTIONS
+     */
+    public function getSettingEmailOptions(Request $request) {
+        $websiteUrl = $request->input('website_domain');
+        $form_id = intval($request->input('form_id'));
+        $getApiUrl = $websiteUrl . '/wp-json/v1/get-setting-email-options';
+        $getFormsResponse = Http::get($getApiUrl, [
+        'form_id' => $form_id,
+        ]);
+        
+        if ($getFormsResponse->successful()) {
+            $response['response'] =$getFormsResponse->json()['data'];
+            $response['status'] = $getFormsResponse->status();
+            $response['success'] = true;
+        }
+            else{
+                $response['response'] = $getFormsResponse->json();
+                $response['status'] = 400;
+                $response['success'] = false;
+            }
+        return $response;
+    }
+
+    /**
+     * THIS METHOD IS FOR UPDATING SETTING EMAIL OPTIONS
+     */
+    public function updateSettingEmailOptions(Request $request) {
         $response = [
             'success' => false,
             'status' => 400,
@@ -286,9 +359,9 @@ class WordpressCustomFormController extends Controller
         $validator = Validator::make($request->all(), [
             'website_domain' => 'required|url',
             'form_id' => 'required|integer',
-            'subject' => 'required|string',
-            'body' => 'required|string',
-            'secondary_email' => 'nullable|email',
+            'subject' => 'nullable|string',
+            'body' => 'nullable|string', 
+            'admin_email' => 'nullable|email',
         ]);
 
         if ($validator->fails()) {
@@ -302,7 +375,7 @@ class WordpressCustomFormController extends Controller
         $validatedData = $validator->validated();
 
         $websiteUrl = $request->input('website_domain');
-        $postApiUrl = $websiteUrl . '/wp-json/v1/create-email-template';
+        $postApiUrl = $websiteUrl . '/wp-json/v1/update-setting-email-options';
         $wpResponse = Http::post($postApiUrl, $validatedData);
 
         if ($wpResponse->successful()) {

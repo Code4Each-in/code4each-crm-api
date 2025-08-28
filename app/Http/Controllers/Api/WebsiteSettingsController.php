@@ -50,6 +50,7 @@ class WebsiteSettingsController extends Controller
             "agency_website_detail" => [
                 "id" => $agencyWebsiteDetail->id,
                 "business_name" => $agencyWebsiteDetail->business_name,
+                "email" => $agencyWebsiteDetail->email,
                 "website_category_id" => $agencyWebsiteDetail->website_category_id,
                 "website_category_name" => $websiteCategoryName,
                 "phone" => $agencyWebsiteDetail->phone,
@@ -100,6 +101,7 @@ class WebsiteSettingsController extends Controller
             'website_id' => 'required',
             'category_id' => 'required',
             'others_category_name' => 'nullable',
+            'email' => 'required|email',
             'business_name' => 'required|string',
             'phone' => 'nullable',
             'address' => 'required|string',
@@ -146,6 +148,7 @@ class WebsiteSettingsController extends Controller
         $agencyWebsiteDetails = AgencyWebsite::where('website_id',$website_id)->update([
             'website_category_id' => $validated['category_id'],
             'others_category_name' => $othersCategoryName,
+            'email' => $validated['email'],
             'phone' => $phone,
             'address' => $validated['address'],
             'city' => $validated['city'],
@@ -166,6 +169,7 @@ class WebsiteSettingsController extends Controller
                 "country" => ["value" => $validated['country']],
                 "pincode" => ["value" => $validated['zip']],
                 "description" => ["value" => $description],
+                "email" => ["value" => $validated['email']]
             ];
             $updateAgencyDetailResponse = $this->wordpressComponentClass->updateGlobalVariables($website_url , $data);
             if($updateAgencyDetailResponse['success'] == false){

@@ -12,6 +12,7 @@ class AgencyWebsite extends Model
     protected $fillable = [
         'website_category_id',
         'others_category_name',
+        'email',
         'business_name',
         'phone',
         'address',
