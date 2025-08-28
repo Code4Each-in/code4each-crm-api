@@ -127,7 +127,9 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/delete-form',[WordpressCustomFormController::class,'deleteWordpressForm']);
     Route::post('/update-customfields', [WordpressCustomFormController::class, 'updateWordpressFormField']);
     Route::get('/get-form-submissions',[WordpressCustomFormController::class,'getWordpressFormEntries']);
-    Route::post('/create-email-template',[WordpressCustomFormController::class,'createEmailTemplate']);
+    // Route::post('/create-email-template',[WordpressCustomFormController::class,'createEmailTemplate']);
+    Route::get('/get-setting-email-options', [WordpressCustomFormController::class,'getSettingEmailOptions']);
+    Route::post('/update-setting-email-options',[WordpressCustomFormController::class,'updateSettingEmailOptions']);
     });
     //End of Verified Routes
   
