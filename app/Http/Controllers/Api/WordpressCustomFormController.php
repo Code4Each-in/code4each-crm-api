@@ -55,6 +55,7 @@ class WordpressCustomFormController extends Controller
             'template.subject' => 'nullable|string',
             'template.body' => 'nullable|string',
             'template.secondary_email' => 'nullable|email',
+            'fields.*.calendarSettings' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -181,6 +182,7 @@ class WordpressCustomFormController extends Controller
             'fields.*.required' => 'nullable|boolean',
             'fields.*.position' => 'nullable|integer',
             'fields.*.options' => 'nullable|array',
+            'fields.*.calendarSettings' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
