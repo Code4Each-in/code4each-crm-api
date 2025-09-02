@@ -261,16 +261,12 @@ class WordpressComponentController extends Controller
 
     }
 
-    public function getUploadedImages($websiteUrl,$type)
+    public function getUploadedImages($websiteUrl, $type)
     {
-        $data = [
+        $getUploadedImagesUrl = Http::get($websiteUrl . '/wp-json/v1/get-component-images', [
             'type' => $type
-        ];
-        $jsonData = json_encode($data);
-        $getUploadedImagesUrl = $websiteUrl . '/wp-json/v1/get-component-images';
-
-        $getUploadedImagesUrl = Http::withBody($jsonData, 'application/json')->get($getUploadedImagesUrl);
-
+        ]);
+    
         if ($getUploadedImagesUrl->successful()) {
             $response['response'] = $getUploadedImagesUrl->json();
             $response['status'] = $getUploadedImagesUrl->status();
@@ -280,8 +276,8 @@ class WordpressComponentController extends Controller
             $response['status'] = 400;
             $response['success'] = false;
         }
+    
         return $response;
-
     }
 
     public function deleteComponentUploadedImages($websiteUrl, $data)
