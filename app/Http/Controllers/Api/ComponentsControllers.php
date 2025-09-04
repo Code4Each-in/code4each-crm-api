@@ -317,6 +317,9 @@ class ComponentsControllers extends Controller
                     'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
                         ->select('component_id', 'name', 'type', 'path', 'version')
                         ->get(),
+                    'component_meta_fields' => $component->formFields()
+                        ->select('name', 'value', 'type', 'meta1', 'meta2', 'field_type')
+                        ->get(),
                 ];
                 if(isset($component['template_id'])){
                     $componentData['component_detail']['position'] = $component['position'];
