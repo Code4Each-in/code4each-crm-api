@@ -267,7 +267,7 @@ class ComponentsControllers extends Controller
             if($Data){
                 $data = [
                     "agency_name" => ["value" => $Data["business_name"]],
-                    "phone" => ["phone" => $Data["phone"]],
+                    "phone" => ["value" => $Data["phone"]],
                     "address" => ["value" => $Data["address"]],
                     "state" => ["value" => $Data["state"]],
                     "city" => ["value" => $Data["city"]],
@@ -319,12 +319,11 @@ class ComponentsControllers extends Controller
                         ->get(),
                     'component_meta_fields' => $component->formFields->map(function($field) {
                         return [
-                            'name'       => $field->name,
+                            'name'       => $field->field_name,
                             'value'      => $field->default_value,
-                            'type'       => $field->type,
+                            'type'       => $field->field_type,
                             'meta1'      => $field->meta_key1,
                             'meta2'      => $field->meta_key2,
-                            'field_type' => $field->field_type,
                         ];
                     }),
                 ];
