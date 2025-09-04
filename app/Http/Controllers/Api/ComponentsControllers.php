@@ -317,9 +317,16 @@ class ComponentsControllers extends Controller
                     'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
                         ->select('component_id', 'name', 'type', 'path', 'version')
                         ->get(),
-                    'component_meta_fields' => $component->formFields()
-                        ->select('name', 'value', 'type', 'meta1', 'meta2', 'field_type')
-                        ->get(),
+                    'component_meta_fields' => $component->formFields->map(function($field) {
+                        return [
+                            'name'       => $field->name,
+                            'value'      => $field->default_value,
+                            'type'       => $field->type,
+                            'meta1'      => $field->meta_key1,
+                            'meta2'      => $field->meta_key2,
+                            'field_type' => $field->field_type,
+                        ];
+                    }),
                 ];
                 if(isset($component['template_id'])){
                     $componentData['component_detail']['position'] = $component['position'];
@@ -379,9 +386,8 @@ class ComponentsControllers extends Controller
                 if(!$randomComponent){
                     return response()->json(["errors"=> "Error Occurs While Generating Random Components."]);
                 }
-                    $randomIndex = array_rand($randomComponent);
+                    $randomIndex = array_rand($randomComponent->toArray());
                     $randomValue = $randomComponent[$randomIndex];
-                    $randomValue->load('formFields');
                 if ($randomComponent) {
                     $components[] = $randomValue;
                 }
@@ -395,7 +401,8 @@ class ComponentsControllers extends Controller
         return Component::where('type', $type)
             ->where('category', 'LIKE', '%' . $category . '%')
             ->where('status','active')
-            ->inRandomOrder()->get()->toArray();
+            ->inRandomOrder()
+            ->with('formFields')->get();
     }
 
     private function getTemplateComponent($template_id)
@@ -405,9 +412,9 @@ class ComponentsControllers extends Controller
                 ->join('website_templates', 'website_templates_components.template_id', '=', 'website_templates.id')
                 ->where('website_templates_components.template_id', $template_id)
                 ->where('website_templates.status', 'active')
-                ->select('components_crm.*') // Select all columns from components_crm
-                ->get()
-                ->toArray();
+                ->select('components_crm.*')
+                ->with('formFields') // Select all columns from components_crm
+                ->get();
         }
     }
     
