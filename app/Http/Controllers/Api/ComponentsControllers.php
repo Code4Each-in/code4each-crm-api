@@ -363,7 +363,7 @@ class ComponentsControllers extends Controller
     private function generateComponents($agency_id, $websiteUrl, $template_id = false)
     {
         if($template_id){
-            $components = $this->getTemplateComponent($template_id);
+            $components = $this->getTemplateComponent($template_id)->load('formFields');
         }else{
             $agencyWebsiteDetail = AgencyWebsite::with('websiteCategory')->where('agency_id', $agency_id)->where('status', 'active')->first();
             $websiteCategory = $agencyWebsiteDetail->websiteCategory->name;
@@ -378,6 +378,7 @@ class ComponentsControllers extends Controller
                 }
                     $randomIndex = array_rand($randomComponent);
                     $randomValue = $randomComponent[$randomIndex];
+                    $randomValue->load('formFields');
                 if ($randomComponent) {
                     $components[] = $randomValue;
                 }
