@@ -385,11 +385,7 @@ class ComponentsControllers extends Controller
                 if(!$randomComponent){
                     return response()->json(["errors"=> "Error Occurs While Generating Random Components."]);
                 }
-                    $randomIndex = array_rand($randomComponent->toArray());
-                    $randomValue = $randomComponent[$randomIndex];
-                if ($randomComponent) {
-                    $components[] = $randomValue;
-                }
+                $components[] = $randomComponent->random();
             }
         }
         return $components;
