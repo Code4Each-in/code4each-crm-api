@@ -270,9 +270,14 @@ class ComponentsControllers extends Controller
             $response = [
             'success' => false,
         ];
+        
         $logo = '';
-        $agencyWebsiteDetail = AgencyWebsite::where('id',$agency_website_id)->first();
-        $logo = $agencyWebsiteDetail->logo;
+        if ($agency_website_id) {
+            $agencyWebsiteDetail = AgencyWebsite::where('id', $agency_website_id)->first();
+            if ($agencyWebsiteDetail) {
+                $logo = $agencyWebsiteDetail->logo;
+            }
+        }
         if ($regenerateFlag) {
             $components = $this->generateComponents($agency_id, $websiteUrl, $template_id);
 
