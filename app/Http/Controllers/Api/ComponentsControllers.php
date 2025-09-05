@@ -98,6 +98,7 @@ class ComponentsControllers extends Controller
                 'email' => auth()->user()->email,
                 'created_by' => auth()->user()->id,
             ]);
+            $agency_website_id = $agencyWebsiteDetails->id;
 
             if ($request->hasFile('logo')) {
                 $uploadedFile = $request->file('logo');
@@ -131,7 +132,7 @@ class ComponentsControllers extends Controller
                     $template_id = $validate['template_id'];
                 }
 
-                    $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id);
+                $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id);
 
                 if ($result['success'] == true && $result['response']['status'] == 200) {
 
@@ -225,39 +226,54 @@ class ComponentsControllers extends Controller
         return response()->json($response);
     }
 
-    private function uploadLogoToWordpress($agencyId,$url)
+    private function uploadLogoToWordpress($websiteUrl, $logo)
     {
-        $agencyWebsiteDetail = AgencyWebsite::where('agency_id',$agencyId)->where('status','active')->first();
-        $imagePath = $agencyWebsiteDetail->logo;
-        $thirdPartyUrl = $url . 'wp-json/v1/logo/';
-        $imageFullPath = storage_path('app/public/' . $imagePath);
-        if (file_exists($imageFullPath)) {
+        $thirdPartyUrl = rtrim($websiteUrl, '/') . '/wp-json/v1/logo/';
+
+        if (empty($logo)) {
+            $logoResponse = Http::post($thirdPartyUrl, [
+                'no_logo' => true
+            ]);
+    
+            return [
+                'response' => $logoResponse->json(),
+                'status'   => $logoResponse->status(),
+                'message'  => 'No logo provided, set to default logo.png'
+            ];
+        }
+    
+        $imageFullPath = storage_path('app/public/' . $logo);
+    
+        if (is_file($imageFullPath)) {
             $logoResponse = Http::attach(
                 'logo',
                 file_get_contents($imageFullPath),
-                'logo.png'
-            )
-            ->post($thirdPartyUrl);
+                basename($imageFullPath)
+            )->post($thirdPartyUrl);
+    
             \Log::info("Wordpress Logo Response: " . $logoResponse->body());
-                $response = [
-                     $logoResponse->json(),
-                    'status' =>  $logoResponse->status(),
-                ];
+    
+            return [
+                'response' => $logoResponse->json(),
+                'status'   => $logoResponse->status(),
+            ];
         } else {
-            $response = [
-                'message' => "Error Occurs In Uploading the Logo",
-
+            \Log::error("Logo upload failed. Path is not a file: " . $imageFullPath);
+    
+            return [
+                'message' => "Error: Logo file not found or invalid path.",
+                'status'  => 400
             ];
         }
-        return $response;
     }
 
-    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false)
+    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false)
     {
             $response = [
             'success' => false,
         ];
-        $agencyWebsiteDetail = AgencyWebsite::where('agency_id',$agency_id)->first();
+        $logo = '';
+        $agencyWebsiteDetail = AgencyWebsite::where('id',$agency_website_id)->first();
         $logo = $agencyWebsiteDetail->logo;
         if ($regenerateFlag) {
             $components = $this->generateComponents($agency_id, $websiteUrl, $template_id);
@@ -283,9 +299,7 @@ class ComponentsControllers extends Controller
 
             }
             
-            if($logo){
-                $uploadLogo =  $this->uploadLogoToWordpress($agency_id, $websiteUrl);
-            }
+            $uploadLogo =  $this->uploadLogoToWordpress($websiteUrl, $logo);
             $components = $this->generateComponents($agency_id, $websiteUrl, $template_id);
         }
         $startAddComponentUrl = $websiteUrl . 'wp-json/v1/installation';
@@ -367,7 +381,6 @@ class ComponentsControllers extends Controller
 
         return $response;
     }
-
 
     private function generateComponents($agency_id, $websiteUrl, $template_id = false)
     {
