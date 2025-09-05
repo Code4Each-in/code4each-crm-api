@@ -41,32 +41,41 @@ class CommonEmailNotification extends Notification
      */
     public function toMail($notifiable)
     {
-            $mailMessage = new MailMessage;
-            $mailMessage->greeting(isset($this->messages['greeting-text']) ? $this->messages['greeting-text'] : '');
-            $mailMessage->subject(isset($this->messages['subject']) ? $this->messages['subject'] : 'Notification Email');
-                // ->line(isset($this->messages['title']) ? $this->messages['title'] : 'Title')
-                // ->line(isset($this->messages['body-text']) ? $this->messages['body-text'] : 'Body Text')
-                $lineItems = $this->messages['lines_array'];
+        $mailMessage = new MailMessage;
 
-                foreach ($lineItems as $key => $value) {
-                    if (strpos($key, 'special_') === 0) {
-                        $specialLabel = ucwords(str_replace('_', ' ', str_replace('special_', '', $key)));
-                        $mailMessage->line( $specialLabel . ': ' . $value);
-                    } else {
-                        $mailMessage->line($value);
-                    }
+        // Greeting & Subject
+        $mailMessage->greeting($this->messages['greeting-text'] ?? 'Hello,')
+                ->subject($this->messages['subject'] ?? 'Notification Email');
+        
+        // Lines
+        if (!empty($this->messages['lines_array']) && is_array($this->messages['lines_array'])) {
+            foreach ($this->messages['lines_array'] as $key => $value) {
+                if (strpos($key, 'special_') === 0) {
+                    // Format special keys like "special_Agency_Name" → "Agency Name"
+                    $specialLabel = ucwords(str_replace('_', ' ', str_replace('special_', '', $key)));
+                    $mailMessage->line($specialLabel . ': ' . $value);
+                } else {
+                    $mailMessage->line($value);
                 }
-                if (isset($this->messages['url-title']) || isset($this->messages['url'])) {
-                    $mailMessage->action(
-                        isset($this->messages['url-title']) ? $this->messages['url-title'] : 'Action Not Required',
-                        isset($this->messages['url']) ? url($this->messages['url']) : '#'
-                    );
-                }
-                $mailMessage->line(isset($this->messages['additional-info']) ? $this->messages['additional-info'] : '');
-                $mailMessage->line('Thank you for using our Platform!');
+            }
+        }
 
-                return $mailMessage;
+        // Action Button (Optional)
+        if (!empty($this->messages['url']) || !empty($this->messages['url-title'])) {
+            $mailMessage->action(
+                $this->messages['url-title'] ?? 'Action Not Required',
+                !empty($this->messages['url']) ? url($this->messages['url']) : '#'
+            );
+        }
 
+        // Additional Info & Closing
+        if (!empty($this->messages['additional-info'])) {
+            $mailMessage->line($this->messages['additional-info']);
+        }
+
+        $mailMessage->line('Thank you for using our Platform!');
+
+        return $mailMessage;
     }
     /**
      * Get the array representation of the notification.
