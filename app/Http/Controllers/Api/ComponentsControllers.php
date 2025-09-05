@@ -63,8 +63,7 @@ class ComponentsControllers extends Controller
 
             $websiteDomain = $websitesData->website_domain ?? null;
             if(!$websitesData){
-                $response['message'] = 'Currently We are Getting Huge Number Of Requests. Well Notified You Soon When Available.';
-                // return response()->json(['error' => 'An Error occur While Creating Your site. Domain may not exists related to your business name. Ask for the Support.'],500);
+                $response['message'] = 'Currently we are getting a huge number of requests. We will notify you soon when available.';
             }
 
             $wordpressDatabase = $this->getWordPressData($websitesData->website_domain, $websitesData->id, $validate['agency_id']);
@@ -126,8 +125,7 @@ class ComponentsControllers extends Controller
                 $dataToSend['description'] = $agencyWebsiteDetails->description;
                 $dataToSend['email'] = $agencyWebsiteDetails->email;
 
-                 // If template_id is provided, use it; otherwise, set it to false
-                
+                // If template_id is provided, use it; otherwise, set it to false
                 if (isset($validate['template_id'])) {
                     $template_id = $validate['template_id'];
                 }
@@ -175,12 +173,12 @@ class ComponentsControllers extends Controller
                     $supportEmail = env('SUPPORT_EMAIL');
                     $supportPhone = env('SUPPORT_PHONE');
                     $messages = [
-                        'greeting-text' => "Hey User,",
+                        'greeting-text' => "Hey " . auth()->user()->name . ",",
                         'subject' => 'Your Domain is Ready',
-                        'additional-info' => 'Need assistance? Contact us at ' . $supportEmail . ' or SupportPhone: ' . $supportPhone . '.',
+                        'additional-info' => 'Need assistance? Contact us at ' . $supportEmail . ' or call ' . $supportPhone . '.',
                         'lines_array' => [
                             'title' => 'Your domain is now ready for use after successfully updating your agency details. Enjoy a seamless online presence with the latest information.',
-                            'body-text' => 'Here Is The Details For Your Website',
+                            'body-text' => 'Here are the details for your website:',
                             'special_Agency_Name' => $agencyWebsiteDetails->business_name ,
                             'special_Domain_Name' => $websiteUrl,
                         ],
