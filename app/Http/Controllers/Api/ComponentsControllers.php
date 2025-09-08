@@ -823,7 +823,7 @@ class ComponentsControllers extends Controller
     /**
      * THIS METHOD IS FOR Save SEO Keywords
      */
-    public function saveScoKeywords()
+    public function saveSeoKeywords()
     {
         $response = [
             'success' => false,
@@ -831,13 +831,13 @@ class ComponentsControllers extends Controller
         ];
     
         $websiteUrl = request()->input('website_domain');
-        $keywords   = request()->input('sco_keywords');
+        $keywords   = request()->input('seo_keywords');
         if(!$websiteUrl || !$keywords){
             return response()->json(['error' => "website url and keywords are required to process this request."],400);
         }
-        $saveSeoKeywordsUrl = $websiteUrl . 'wp-json/v1/save-sco-keywords';
+        $saveSeoKeywordsUrl = $websiteUrl . 'wp-json/v1/save-seo-keywords';
         $data = [
-            'sco_keywords' => $keywords
+            'seo_keywords' => $keywords
         ];
         $saveSeoKeywordsResponse = Http::post($saveSeoKeywordsUrl, $data);
             if ($saveSeoKeywordsResponse->successful()) {

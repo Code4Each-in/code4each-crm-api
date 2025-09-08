@@ -133,7 +133,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // SCO KEYWORD ROUTES
-    Route::post('/save-sco-keywords',[ComponentsControllers::class,'saveScoKeywords']);
+    Route::post('/save-seo-keywords',[ComponentsControllers::class,'saveSeoKeywords']);
     
 });
 //End of Authenticated Group Routes
