@@ -131,9 +131,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-setting-email-options', [WordpressCustomFormController::class,'getSettingEmailOptions']);
     Route::post('/update-setting-email-options',[WordpressCustomFormController::class,'updateSettingEmailOptions']);
     });
-    //End of Verified Routes
-  
-   
+
+    // SCO KEYWORD ROUTES
+    Route::post('/save-sco-keywords',[ComponentsControllers::class,'saveScoKeywords']);
+    
 });
 //End of Authenticated Group Routes
 
