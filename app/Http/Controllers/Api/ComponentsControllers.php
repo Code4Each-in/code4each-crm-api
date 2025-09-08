@@ -819,6 +819,39 @@ class ComponentsControllers extends Controller
             }
         return response()->json($response);
     }
+
+    /**
+     * THIS METHOD IS FOR Save SEO Keywords
+     */
+    public function saveScoKeywords()
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+    
+        $websiteUrl = request()->input('website_domain');
+        $keywords   = request()->input('sco_keywords');
+        if(!$websiteUrl || !$keywords){
+            return response()->json(['error' => "website url and keywords are required to process this request."],400);
+        }
+        $saveSeoKeywordsUrl = $websiteUrl . 'wp-json/v1/save-sco-keywords';
+        $data = [
+            'sco_keywords' => $keywords
+        ];
+        $saveSeoKeywordsResponse = Http::post($saveSeoKeywordsUrl, $data);
+            if ($saveSeoKeywordsResponse->successful()) {
+                $responseData = $saveSeoKeywordsResponse->json();
+                $response['data'] = $responseData["data"] ?? [];
+                $response['status'] = $saveSeoKeywordsResponse->status();
+                $response['success'] = true;
+            }else{
+                $response['response'] = $saveSeoKeywordsResponse->json();
+                $response['status'] = 400;
+                $response['success'] = false;
+            }
+        return response()->json($response);
+    }
 }
 
 
