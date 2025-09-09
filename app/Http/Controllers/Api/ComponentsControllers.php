@@ -832,7 +832,7 @@ class ComponentsControllers extends Controller
     
         $websiteUrl = request()->input('website_domain');
         $keywords   = request()->input('seo_keywords');
-        if(!$websiteUrl || !$keywords){
+        if(!$websiteUrl){
             return response()->json(['error' => "website url and keywords are required to process this request."],400);
         }
         $saveSeoKeywordsUrl = $websiteUrl . 'wp-json/v1/save-seo-keywords';
