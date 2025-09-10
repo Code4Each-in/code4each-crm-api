@@ -26,6 +26,7 @@ use Google\Service\Monitoring\Custom;
 use App\Http\Controllers\Api\WordpressMenusController;
 use App\Http\Controllers\Api\SubscriptionPaymentController;
 use App\Http\Controllers\Api\WordpressCustomFormController;
+use App\Http\Controllers\Api\WordpressCustomTemplatePagesController;
 
 
 
@@ -134,6 +135,12 @@ Route::middleware('auth:api')->group(function () {
 
     // SCO KEYWORD ROUTES
     Route::post('/save-seo-keywords',[ComponentsControllers::class,'saveSeoKeywords']);
+
+    // Template Pages Routes
+    Route::get('/get-template-pages',[WordpressCustomTemplatePagesController::class,'getWordpressTemplatePages']);
+    Route::post('/add-template-pages',[WordpressCustomTemplatePagesController::class,'addWordpressTemplatePages']);
+    Route::post('/update-template-pages',[WordpressCustomTemplatePagesController::class,'updateWordpressTemplatePages']);
+    Route::delete('/delete-template-pages',[WordpressCustomTemplatePagesController::class,'deleteWordpressTemplatePages']);
     
 });
 //End of Authenticated Group Routes
