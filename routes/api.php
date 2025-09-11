@@ -135,6 +135,7 @@ Route::middleware('auth:api')->group(function () {
 
     // SCO KEYWORD ROUTES
     Route::post('/save-seo-keywords',[ComponentsControllers::class,'saveSeoKeywords']);
+    Route::post('/add-templatepages',[ComponentsControllers::class,'createDefaultPages']);
 
     // Template Pages Routes
     Route::get('/get-template-pages',[WordpressCustomTemplatePagesController::class,'getWordpressTemplatePages']);

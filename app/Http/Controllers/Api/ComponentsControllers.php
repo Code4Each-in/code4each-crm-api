@@ -231,9 +231,10 @@ class ComponentsControllers extends Controller
     private function createDefaultPages($website_domain){
         $defaultPages = ['Home', 'About Us', 'Contact Us', 'Privacy Policy', 'Terms & Conditions'];
         $pageId = null;
+        $website_domain = $request->input('website_domain');
 
         foreach ($defaultPages as $page) {
-            $createPageUrl = rtrim($website_domain, '/') . '/wp-json/v1/add-templatepages/';
+            $createPageUrl = $website_domain . '/wp-json/v1/add-templatepages';
 
             $pageData = [
                 'title' => $page,
