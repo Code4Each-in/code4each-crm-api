@@ -302,7 +302,8 @@ class ComponentsControllers extends Controller
     }
 
     public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false, $pageId = null)
-    {
+    {   
+        $pageId = $pageId ?? null;
             $response = [
             'success' => false,
         ];
@@ -371,7 +372,7 @@ class ComponentsControllers extends Controller
                     'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
                         ->select('component_id', 'name', 'type', 'path', 'version')
                         ->get(),
-                    'component_meta_fields' => $component->formFields->map(function($field) {
+                    'component_meta_fields' => $component->formFields->map(function($field) use ($pageId) {
                         return [
                             'name'       => $field->field_name,
                             'value'      => $field->default_value,
