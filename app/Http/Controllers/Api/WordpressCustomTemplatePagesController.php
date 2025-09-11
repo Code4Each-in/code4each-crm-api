@@ -87,7 +87,8 @@ class WordpressCustomTemplatePagesController extends Controller
             'page_id'=>'required',
             'page_name'=>'required',
             'page_slug'=>'required',
-            'website_domain'=>'required'
+            'website_domain'=>'required',
+            'status' => 'nullable|in:publish,draft',
         ]);
 
         if ($validator->fails()) {
