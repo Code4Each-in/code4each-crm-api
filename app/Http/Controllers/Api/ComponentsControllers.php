@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\WordpressComponentController;
 use App\Models\WebsiteTemplate;
 use App\Models\WebsiteTemplateComponent;
 use App\Models\Plan;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ComponentsControllers extends Controller
 {
@@ -130,7 +132,9 @@ class ComponentsControllers extends Controller
                     $template_id = $validate['template_id'];
                 }
 
-                $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id);
+                $pageId = $this->createDefaultPages($website_domain);
+
+                $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id, $pageId);
 
                 if ($result['success'] == true && $result['response']['status'] == 200) {
 
@@ -224,6 +228,38 @@ class ComponentsControllers extends Controller
         return response()->json($response);
     }
 
+    private function createDefaultPages($website_domain){
+        $defaultPages = ['Home', 'About Us', 'Contact Us', 'Privacy Policy', 'Terms & Conditions'];
+        $pageId = null;
+
+        foreach ($defaultPages as $page) {
+            $createPageUrl = rtrim($website_domain, '/') . '/wp-json/v1/add-templatepages/';
+
+            $pageData = [
+                'title' => $page,
+                'slug' => Str::slug($page),
+                'status' => 'publish',
+                'type' => 'system_created'
+            ];
+
+            $createPageResponse = Http::post($createPageUrl, $pageData);
+
+            if ($createPageResponse->successful()) {
+                $responseBody = $createPageResponse->json();
+                Log::info("Page '$page' created successfully on $website_domain.");
+
+                if ($page === 'Home' && isset($responseBody['page_id'])) {
+                    $pageId = $responseBody['page_id'];
+                }
+            } else {
+                Log::error("Failed to create page '$page' on $website_domain. Response: " . $createPageResponse->body());
+            }
+        }
+
+        return $pageId; 
+    }
+
+
     private function uploadLogoToWordpress($websiteUrl, $logo)
     {
         $thirdPartyUrl = rtrim($websiteUrl, '/') . '/wp-json/v1/logo/';
@@ -265,7 +301,7 @@ class ComponentsControllers extends Controller
         }
     }
 
-    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false)
+    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false, $pageId = null)
     {
             $response = [
             'success' => false,
@@ -330,6 +366,7 @@ class ComponentsControllers extends Controller
                         'position' => null,
                         'component_unique_id' => $component['component_unique_id'],
                         'status' => $component['status'],
+                        'page_id' => $pageId,
                     ],
                     'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
                         ->select('component_id', 'name', 'type', 'path', 'version')
@@ -341,6 +378,7 @@ class ComponentsControllers extends Controller
                             'type'       => $field->field_type,
                             'meta1'      => $field->meta_key1,
                             'meta2'      => $field->meta_key2,
+                            'page_id'   => $pageId,
                         ];
                     }),
                 ];
