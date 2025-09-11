@@ -136,7 +136,7 @@ class ComponentsControllers extends Controller
 
                 $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id, $pageId);
 
-                if ($result['success'] == true && $result['response']['status'] == 200) {
+                if ($result['success'] == true && $result['status'] == 200) {
 
                     $websiteUrl = $result['domain'];
                     //assigned domain to agency Website
@@ -228,13 +228,12 @@ class ComponentsControllers extends Controller
         return response()->json($response);
     }
 
-    private function createDefaultPages($website_domain){
+    public function createDefaultPages($website_domain){
         $defaultPages = ['Home', 'About Us', 'Contact Us', 'Privacy Policy', 'Terms & Conditions'];
         $pageId = null;
-        $website_domain = $request->input('website_domain');
 
         foreach ($defaultPages as $page) {
-            $createPageUrl = $website_domain . '/wp-json/v1/add-templatepages';
+            $createPageUrl = $website_domain . '/wp-json/v1/add-defaultpages';
 
             $pageData = [
                 'title' => $page,
@@ -349,7 +348,7 @@ class ComponentsControllers extends Controller
             $this->addWordpressGlobalColors($websiteUrl);
             //add font family to wordpress site
            $addFontFamilyResponse = $this->wordpressComponentClass->addWordpressFontFamily($websiteUrl);
-           if($addFontFamilyResponse['success'] && $addFontFamilyResponse['response']['status'] == 200)
+           if($addFontFamilyResponse['success'] && $addFontFamilyResponse['status'] == 200)
            {
                 $activeFontId = $addFontFamilyResponse['response']['font_id'];
                 //set  active font family name in wordpress db
