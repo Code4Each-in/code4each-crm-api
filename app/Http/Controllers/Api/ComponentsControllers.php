@@ -515,20 +515,26 @@ class ComponentsControllers extends Controller
     public function getActiveWordpressComponents($websiteUrl = false)
     {
         $websiteUrl = request()->input('website_url');
+        $pageId     = request()->input('page_id');
         if(!$websiteUrl){
             return response()->json(['error' => "website url is required to process this request."],400);
         }
         $getActiveComponentUrl = $websiteUrl . '/wp-json/v1/components';
+        if ($pageId) {
+            $getActiveComponentUrl .= '?page_id=' . $pageId;
+        }
         $getActiveComponentResponse = Http::get($getActiveComponentUrl);
             if ($getActiveComponentResponse->successful()) {
                 $responseData = $getActiveComponentResponse->json();
-                $response['active_components'] = $responseData['data'];
-                $response['status'] = $getActiveComponentResponse->status();
-                $response['success'] = true;
-            }else{
+                $response['active_components'] = $responseData['data'] ?? [];
+                $response['status'] = $responseData['status'] ?? 200;
+                $response['success'] = $responseData['success'] ?? true;
+                $response['message'] = $responseData['message'] ?? '';
+            } else {
                 $response['response'] = $getActiveComponentResponse->json();
-                $response['status'] = 400;
+                $response['status'] = $getActiveComponentResponse->status();
                 $response['success'] = false;
+                $response['message'] = 'Failed to fetch components from WP.';
             }
         return $response;
     }
@@ -645,11 +651,12 @@ class ComponentsControllers extends Controller
         ];
 
         $websiteUrl = request()->input('website_url');
+        $pageId     = request()->input('page_id');
         if(!$websiteUrl){
             return response()->json(['error' => "website url is required to process this request."],400);
         }
-        $activeComponentsDetail =  $this->getActiveWordpressComponents($websiteUrl);
-        if($activeComponentsDetail['status'] == 200 && $activeComponentsDetail['success'] == true){
+        $activeComponentsDetail =  $this->getActiveWordpressComponents($websiteUrl, $pageId);
+        if ($activeComponentsDetail['status'] == 200 && $activeComponentsDetail['success'] == true) {
             $activeComponents = $activeComponentsDetail['active_components'];
             $componentDetail = [];
             foreach ($activeComponents as $componentUniqueId) {
@@ -663,16 +670,26 @@ class ComponentsControllers extends Controller
                     $previewPath = '/storage/'. $componentsData->preview;
                     $components_detail['preview'] = $previewPath;
                     $components_detail['form_fields'] =  $formFields ;
+                    $components_detail['page_id'] = $pageId;
                     $componentDetail[] = $components_detail;
                 }
             }
         }
-        if($componentDetail){
+        if (!empty($componentDetail)) {
             $response = [
                 'message' => "Detail Fetched Successfully.",
                 'success' => true,
                 'status' => 200,
-                'components_detail' => $componentDetail
+                'components_detail' => $componentDetail,
+                'page_id' => $pageId,
+            ];
+        } else {
+            $response = [
+                'message' => "No components found.",
+                'success' => true,
+                'status' => 200,
+                'components_detail' => [],
+                'page_id' => $pageId,
             ];
         }
 
