@@ -141,6 +141,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/add-template-pages',[WordpressCustomTemplatePagesController::class,'addWordpressTemplatePages']);
     Route::post('/update-template-pages',[WordpressCustomTemplatePagesController::class,'updateWordpressTemplatePages']);
     Route::delete('/delete-template-pages',[WordpressCustomTemplatePagesController::class,'deleteWordpressTemplatePages']);
+
+    // Custom Pages Routes
+    Route::get('/get-custom-components-and-fieldvalues',[WordpressCustomTemplatePagesController::class,'getCustomComponentsAndFieldValues']);
+    Route::post('/add-custom-components-field-values',[WordpressCustomTemplatePagesController::class,'addCustomComponentsFieldValues']);
     
 });
 //End of Authenticated Group Routes
