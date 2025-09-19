@@ -224,6 +224,8 @@ class ComponentController extends Controller
             $uploadedFile->storeAs('public/Components', $filename);
             $path = 'Components/' . $filename;
 
+            $uploadedFile->storeAs('public/HeaderImages', $filename);
+
             // Check if multiple_image is 'on', update default_value accordingly
             if (isset($formFieldData['multiple_image']) && $formFieldData['multiple_image'] == 'on') {
                 // Convert default_value to a string if it's not already
