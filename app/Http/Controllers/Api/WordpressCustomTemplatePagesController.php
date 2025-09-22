@@ -200,15 +200,11 @@ class WordpressCustomTemplatePagesController extends Controller
 
             // 2. Build default field structure
             foreach ($componentFormFields as $formField) {
-                $defaultValue = $formField->default_value;
-                if ($formField->field_type == 'image' && $formField->default_value != null) {
-                    $defaultValue = '/storage/' . $defaultValue;
-                }
 
                 $formFieldsArray[] = [
                     "field_name"    => $formField->field_name,
                     "field_type"    => $formField->field_type,
-                    "default_value" => $formField->field_type === 'image' ? null : $formField->default_value,
+                    "default_value" => null,
                     "default_meta1" => $formField->meta_key1,
                     "default_meta2" => $formField->meta_key2,
                     "value"         => null,
@@ -219,9 +215,10 @@ class WordpressCustomTemplatePagesController extends Controller
             }
 
             // 3. Collect field names
-            $fieldNames = array_filter(array_map(function ($item) {
-                return $item['field_name'] ?? null;
-            }, $formFieldsArray));
+            $fieldNames = array_map(function ($item) {
+                return $this->normalizeFieldName($item['field_name'] ?? null);
+            }, $formFieldsArray);
+            $fieldNames = array_filter($fieldNames); 
 
             // 4. Call WordPress API (send as query params)
             $getApiUrl = $websiteUrl . '/wp-json/v1/get-custom-components-and-fieldvalues';
@@ -237,7 +234,7 @@ class WordpressCustomTemplatePagesController extends Controller
                 $replacementArray = $jsonData['data'] ?? [];
 
                 $formFieldsArray = array_map(function ($formField) use ($replacementArray) {
-                    $field_name = $formField['field_name'];
+                    $field_name = $field_name = $this->normalizeFieldName($formField['field_name']);
                     if (isset($replacementArray[$field_name])) {
                         $formField['value']   = $replacementArray[$field_name]['value'] ?? null;
                         if ($formField['field_type'] === 'image') {
@@ -268,6 +265,13 @@ class WordpressCustomTemplatePagesController extends Controller
             'status'  => 200,
         ]);
     }
+
+    private function normalizeFieldName($fieldName) {
+        // Replace '-img' with '-image'
+        $fieldName = preg_replace('/-img(\d*)$/', '-image$1', $fieldName);
+        return $fieldName;
+    }
+
 
     /**
      * THIS METHOD IS FOR SAVING WORDPRESS CUSTOM COMPONENTS FIELDS VALUE
