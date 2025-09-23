@@ -288,7 +288,7 @@ class WordpressCustomTemplatePagesController extends Controller
             'field_name'  => 'required',
             'value'       => 'required',
             'website_url' => 'required',
-            'type'        => 'required'
+            'type'        => 'required|in:header,about_section,service_section,footer,text'
         ]);
 
         if ($validator->fails()) {
@@ -302,7 +302,8 @@ class WordpressCustomTemplatePagesController extends Controller
         $validatedData = $validator->validated();
 
         // === Handle header type file upload locally ===
-        if ($request->type === 'header' && $request->hasFile('file')) {
+        $fileTypes = ['header', 'about_section', 'service_section', 'footer'];
+        if (in_array($request->type, $fileTypes) && $request->hasFile('file')) {
             $file = $request->file('file');
 
             // Save file to /storage/app/public/HeaderImages
@@ -322,7 +323,7 @@ class WordpressCustomTemplatePagesController extends Controller
         $http = Http::asMultipart();
 
         // Only attach raw file if NOT type header
-        if ($request->hasFile('file') && $request->type !== 'header') {
+        if ($request->hasFile('file') && !in_array($request->type, $fileTypes)) {
             $file = $request->file('file');
             $fieldName = $request->input('field_name');
             $http->attach(
