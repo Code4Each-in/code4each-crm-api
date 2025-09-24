@@ -288,7 +288,7 @@ class WordpressCustomTemplatePagesController extends Controller
             'field_name'  => 'required',
             'value'       => 'required',
             'website_url' => 'required',
-            'type'        => 'required|in:header,about_section,service_section,footer,text'
+            'type'        => 'required'
         ]);
 
         if ($validator->fails()) {
