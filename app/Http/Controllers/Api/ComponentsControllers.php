@@ -866,6 +866,7 @@ class ComponentsControllers extends Controller
             if ($getGlobalVariablesResponse->successful()) {
                 $responseData = $getGlobalVariablesResponse->json();
                 $response['global_variables'] = $responseData["global_variables"] ?? [];
+                $response['admin_email'] = $responseData['admin_email'] ?? null;
                 $response['status'] = $getGlobalVariablesResponse->status();
                 $response['success'] = true;
             }else{
