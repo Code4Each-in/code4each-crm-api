@@ -305,13 +305,9 @@ class WordpressCustomTemplatePagesController extends Controller
         $fileTypes = ['header', 'about_section', 'service_section', 'footer'];
         if (in_array($request->type, $fileTypes) && $request->hasFile('file')) {
             $file = $request->file('file');
-
             // Save file to /storage/app/public/HeaderImages
             $path = $file->store('public/HeaderImages');
-
-            // Generate public URL (requires `php artisan storage:link`)
             $fileUrl = asset(str_replace('public', 'storage', $path));
-
             // Override "value" with uploaded file URL
             $validatedData['value'] = $fileUrl;
         }
@@ -344,6 +340,47 @@ class WordpressCustomTemplatePagesController extends Controller
             $response['response'] = $wpResponse->json() ?? 'Failed to post';
             $response['status']   = $wpResponse->status() ?? 400;
             $response['success']  = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
+    
+    /**
+     * THIS METHOD IS FOR DELETING WORDPRESS CUSTOM COMPONENTS
+     */
+    public function deleteCustomComponents(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'component_unique_id'=>'required',
+            'website_domain'=>'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status' => 400,
+                'success' => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/delete-customcomponents';
+        $wpResponse = Http::delete($postApiUrl, $validatedData);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status'] = $wpResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status'] = $wpResponse->status() ?? 400;
+            $response['success'] = false;
         }
 
         return response()->json($response, $response['status']);
