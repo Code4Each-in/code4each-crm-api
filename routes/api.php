@@ -145,6 +145,7 @@ Route::middleware('auth:api')->group(function () {
     // Custom Pages Routes
     Route::get('/get-custom-components-and-fieldvalues',[WordpressCustomTemplatePagesController::class,'getCustomComponentsAndFieldValues']);
     Route::post('/add-custom-components-field-values',[WordpressCustomTemplatePagesController::class,'addCustomComponentsFieldValues']);
+    Route::delete('/delete-custom-components',[WordpressCustomTemplatePagesController::class,'deleteCustomComponents']);
     
 });
 //End of Authenticated Group Routes
