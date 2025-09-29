@@ -660,17 +660,20 @@ class ComponentsControllers extends Controller
             $activeComponents = $activeComponentsDetail['active_components'];
             $componentDetail = [];
             foreach ($activeComponents as $componentUniqueId) {
+                $componentUniqueIds = $componentUniqueId['component_unique_id'];
+                $position = $componentUniqueId['position'] ?? null;
                 //Getting Components Detail Based On Component Unique Id With the fromFields Relation using Eager Loading
-                $componentsData = Component::with('formFields')->where('component_unique_id', $componentUniqueId)->first();
+                $componentsData = Component::with('formFields')->where('component_unique_id', $componentUniqueIds)->first();
                 $formFields = $componentsData->formFields->toArray();
                 if($componentsData->preview && $formFields){
                     $components_detail = [];
-                    $components_detail['id'] = $componentUniqueId;
+                    $components_detail['id'] = $componentUniqueIds;
                     $components_detail['type'] = $componentsData->type;
                     $previewPath = '/storage/'. $componentsData->preview;
                     $components_detail['preview'] = $previewPath;
                     $components_detail['form_fields'] =  $formFields ;
                     $components_detail['page_id'] = $pageId;
+                    $components_detail['position'] = $position;
                     $componentDetail[] = $components_detail;
                 }
             }
