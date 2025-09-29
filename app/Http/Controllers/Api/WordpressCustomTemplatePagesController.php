@@ -386,4 +386,116 @@ class WordpressCustomTemplatePagesController extends Controller
         return response()->json($response, $response['status']);
     }
 
+    /**
+     * THIS METHOD IS FOR FETCHING WORDPRESS CUSTOM COMPONENTS BY TYPE
+     */
+    public function getCustomComponentsByType()
+    {
+        $response = [
+            "success" => false,
+            "status"  => 400,
+        ];
+        $type = request()->input('type');
+        if($type){
+            $componentData = Component::where('type',$type)->where('status','active')->get();
+            $componentDetail = [];
+            foreach($componentData as $data){
+               $component = [];
+               $component['id'] = $data->id;
+               $component['component_unique_id'] = $data->component_unique_id;
+               $component['preview'] = '/storage/'.$data->preview;
+               $component['type'] = $data->type;
+               $component['category'] = $data->category;
+               $componentDetail[] = $component;
+            }
+        }else{
+             $componentData = Component::where('status','active')->get();
+             $componentDetail = [];
+             foreach($componentData as $data){
+                $component = [];
+                $component['id'] = $data->id;
+                $component['component_unique_id'] = $data->component_unique_id;
+                $component['preview'] = '/storage/'.$data->preview;
+                $component['type'] = $data->type;
+                $component['category'] = $data->category;
+                $componentDetail[] = $component;
+             }
+        }
+        if($componentDetail){
+            $response = [
+                "message" => "Result Fetched Successfully.",
+                'component' => $componentDetail,
+                "success" => true,
+                "status"  => 200,
+            ];
+        }
+
+        return $response;
+    }
+
+    /**
+     * THIS METHOD IS FOR REPLACING WORDPRESS CUSTOM COMPONENT
+     */
+    public function replaceCustomComponent(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'new_component_id'=>'required',
+            'old_component_id'=>'required',
+            'type'=>'required',
+            'website_domain'=>'required',
+            'page_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status' => 400,
+                'success' => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+        if(!Component::where('component_unique_id', $validatedData['new_component_id'] )->exists()){
+            return response()->json(['errors' => "No such Component found."], 400);
+        }
+        $websiteUrl = $request->input('website_domain');
+        $oldComponentUniqueId['component_unique_id'] = $validatedData['old_component_id'];
+        $newComponentUniqueId = $validatedData['new_component_id'];
+        $deleteComponentResponse = WordpressComponentController::deleteComponent($websiteUrl,$oldComponentUniqueId);
+        if($deleteComponentResponse['success'] == true && $deleteComponentResponse['response']['status'] == 200 ){
+            $componentPosition = $deleteComponentResponse['response']['data']['position'];
+            $componentData = Component::where('component_unique_id',$newComponentUniqueId)->where('status','active')->first();
+            $componentDependencies = $componentData->dependencies;
+            $component = [
+                'component_detail' => [
+                    'component_name' => $componentData->component_name,
+                    'path' => $componentData->path,
+                    'type' => $componentData->type,
+                    'position' => $componentPosition,
+                    'component_unique_id' => $componentData->component_unique_id,
+                    'status' =>  $componentData->status,
+                ],
+                'component_dependencies' => $componentDependencies,
+                'page_id' => $validatedData['page_id'],
+            ];
+            $postApiUrl = $websiteUrl . '/wp-json/v1/replace-custom-component';
+            $wpResponse = Http::post($postApiUrl, $component);
+
+            if ($wpResponse->successful()) {
+                $response['response'] = $wpResponse->json();
+                $response['status'] = $wpResponse->status();
+                $response['success'] = true;
+            } else {
+                $response['response'] = $wpResponse->json() ?? 'Failed to post';
+                $response['status'] = $wpResponse->status() ?? 400;
+                $response['success'] = false;
+            }
+        }
+        return response()->json($response, $response['status']);
+    }
+
 }
