@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Component;
 use App\Models\ComponentFormFields;
+use Illuminate\Support\Arr;
 
 class WordpressCustomTemplatePagesController extends Controller
 {
@@ -288,7 +289,8 @@ class WordpressCustomTemplatePagesController extends Controller
             'field_name'  => 'required',
             'value'       => 'required',
             'website_url' => 'required',
-            'type'        => 'required'
+            'type'        => 'required',
+            'component_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -459,27 +461,67 @@ class WordpressCustomTemplatePagesController extends Controller
         }
 
         $validatedData = $validator->validated();
+
+        $component = Component::with(['formFields' => function ($query) {
+            $query->orderBy('field_position', 'asc');
+        }])
+            ->where('component_unique_id', $validatedData['new_component_id'])
+            ->where('status', 'active')
+            ->first();
+
+        if (!$component) {
+            return response()->json(['errors' => "No such Component found."], 400);
+        }
+
         if(!Component::where('component_unique_id', $validatedData['new_component_id'] )->exists()){
             return response()->json(['errors' => "No such Component found."], 400);
         }
         $websiteUrl = $request->input('website_domain');
         $oldComponentUniqueId['component_unique_id'] = $validatedData['old_component_id'];
-        $newComponentUniqueId = $validatedData['new_component_id'];
+
         $deleteComponentResponse = WordpressComponentController::deleteComponent($websiteUrl,$oldComponentUniqueId);
         if($deleteComponentResponse['success'] == true && $deleteComponentResponse['response']['status'] == 200 ){
             $componentPosition = $deleteComponentResponse['response']['data']['position'];
-            $componentData = Component::where('component_unique_id',$newComponentUniqueId)->where('status','active')->first();
-            $componentDependencies = $componentData->dependencies;
+            $componentDependencies = $component->dependencies;
+
+            $formFieldsArray  = [];
+            $formFieldsValues = [];
+            foreach ($component->formFields as $formField) {
+                $defaultValue = $formField->default_value;
+
+                // Special handling for image fields
+                if ($formField->field_type === 'image' && $defaultValue) {
+                    $defaultValue = str_replace('Components/', '', $defaultValue);
+                }
+
+                $normalizedFieldName = $this->normalizeFieldName($formField->field_name);
+
+                $fieldEntry = [
+                    "field_name"    => $formField->field_name,
+                    "field_type"    => $formField->field_type,
+                    "default_value" => $defaultValue,
+                    "default_meta1" => $formField->meta_key1,
+                    "default_meta2" => $formField->meta_key2,
+                ];
+
+                $formFieldsArray[] = $fieldEntry;
+
+                if ($normalizedFieldName) {
+                    $formFieldsValues[$normalizedFieldName] = $fieldEntry;
+                }
+            }
             $component = [
                 'component_detail' => [
-                    'component_name' => $componentData->component_name,
-                    'path' => $componentData->path,
-                    'type' => $componentData->type,
+                    'component_name' => $component->component_name,
+                    'path' => $component->path,
+                    'type' => $component->type,
                     'position' => $componentPosition,
-                    'component_unique_id' => $componentData->component_unique_id,
-                    'status' =>  $componentData->status,
+                    'component_unique_id' => $component->component_unique_id,
+                    'status' =>  $component->status,
                 ],
                 'component_dependencies' => $componentDependencies,
+                'component_meta_fields' => $formFieldsValues,
+                'old_component_id' => $validatedData['old_component_id'],
                 'page_id' => $validatedData['page_id'],
             ];
             $postApiUrl = $websiteUrl . '/wp-json/v1/replace-custom-component';
@@ -495,6 +537,174 @@ class WordpressCustomTemplatePagesController extends Controller
                 $response['success'] = false;
             }
         }
+        return response()->json($response, $response['status']);
+    }
+
+    /**
+     * THIS METHOD IS FOR FETCHING WORDPRESS CUSTOM COMPONENTS FOR NEW SECTION
+     */
+    public function getCustomComponentsForNewSection()
+    {
+        $response = [
+            "success" => false,
+            "status"  => 400,
+        ];
+
+        $types = Arr::flatten(request()->input('type', []));
+        $excludeIds = Arr::flatten(request()->input('exclude_ids', []));
+
+        if (!empty($types)) {
+            $componentData = Component::whereIn('type', $types)
+                ->where('status', 'active')
+                ->whereNotIn('component_unique_id', $excludeIds)
+                ->get();
+
+            $componentDetail = [];
+            foreach ($componentData as $data) {
+                $component = [];
+                $component['id'] = $data->id;
+                $component['component_unique_id'] = $data->component_unique_id;
+                $component['preview'] = '/storage/' . $data->preview;
+                $component['type'] = $data->type;
+                $component['category'] = $data->category;
+                $componentDetail[] = $component;
+            }
+
+            if (!empty($componentDetail)) {
+                $response = [
+                    "message" => "Components fetched successfully.",
+                    "component" => $componentDetail,
+                    "success" => true,
+                    "status" => 200,
+                ];
+            } else {
+                $response = [
+                    "message" => "No components available for the selected types.",
+                    "component" => [],
+                    "success" => true,
+                    "status" => 200,
+                ];
+            }
+        } else {
+            $response = [
+                "message" => "No type specified.",
+                "component" => [],
+                "success" => false,
+                "status" => 400,
+            ];
+        }
+
+        return $response;
+    }
+
+    /**
+     * THIS METHOD IS FOR ADDING NEW CUSTOM COMPONENT SECTION
+     */
+    public function addNewCustomComponentSection(Request $request)
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        // Validate required fields
+        $validator = Validator::make($request->all(), [
+            'previous_component_id' => 'required',
+            'new_component_id' => 'required',
+            'website_domain'   => 'required',
+            'page_id'          => 'required',
+            'previous_section_position' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status' => 400,
+                'success' => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+
+        // Fetch the component along with its form fields
+        $component = Component::with(['formFields' => function ($query) {
+            $query->orderBy('field_position', 'asc');
+        }])->where('component_unique_id', $validatedData['new_component_id'])
+        ->where('status', 'active')
+        ->first();
+
+        if (!$component) {
+            return response()->json(['errors' => "No such Component found."], 400);
+        }
+
+        $componentFormFields = $component->formFields;
+
+        // Prepare form fields array and normalized key => value mapping
+        $formFieldsArray = [];
+        $formFieldsValues = [];
+
+        foreach ($componentFormFields as $formField) {
+            $defaultValue = $formField->default_value;
+            
+            // Special handling for image fields to remove 'Components/' prefix
+            if ($formField->field_type === 'image' && $defaultValue) {
+                $defaultValue = str_replace(
+                    'Components/',
+                    '',
+                    $defaultValue
+                );
+            }
+
+            // Normalize field name
+            $normalizedFieldName = $this->normalizeFieldName($formField->field_name);
+
+            // Build the single field entry
+            $fieldEntry = [
+                "field_name"    => $formField->field_name,
+                "field_type"    => $formField->field_type,
+                "default_value" => $defaultValue,
+                "default_meta1" => $formField->meta_key1,
+                "default_meta2" => $formField->meta_key2,
+            ];
+
+            // Push into array of all fields
+            $formFieldsArray[] = $fieldEntry;
+
+            // Map normalized name → single entry
+            if ($normalizedFieldName) {
+                $formFieldsValues[$normalizedFieldName] = $fieldEntry;
+            }
+        }
+
+        // Prepare component payload for WordPress
+        $componentPayload = [
+            'component_detail' => [
+                'component_name'      => $component->component_name,
+                'path'                => $component->path,
+                'type'                => $component->type,
+                'component_unique_id' => $component->component_unique_id,
+                'status'              => $component->status,
+                'position'            => $validatedData['previous_section_position'] + 1,
+            ],
+            'component_dependencies' => $component->dependencies,
+            'component_meta_fields'  => $formFieldsValues,
+            'page_id'                => $validatedData['page_id'],
+        ];
+
+        // Send request to WordPress API
+        $postApiUrl = $validatedData['website_domain'] . '/wp-json/v1/add-new-custom-component-section';
+        $wpResponse = Http::post($postApiUrl, $componentPayload);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status'] = $wpResponse->status();
+            $response['success'] = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status'] = $wpResponse->status() ?? 400;
+            $response['success'] = false;
+        }
+
         return response()->json($response, $response['status']);
     }
 

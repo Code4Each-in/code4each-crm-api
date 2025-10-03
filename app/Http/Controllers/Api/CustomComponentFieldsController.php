@@ -114,7 +114,7 @@ class CustomComponentFieldsController extends Controller
             $component = Component::where('status','active')->where('component_unique_id', $componentUniqueId)->select('id', 'type', 'category')->first();
 
             if ($component) {
-                $updateFieldsResponse = $this->wordpressComponentClass->insertOrUpdateComponentFields($formFields, $website_url);
+                $updateFieldsResponse = $this->wordpressComponentClass->insertOrUpdateComponentFields($formFields, $website_url, $componentUniqueId);
 
                 if ($updateFieldsResponse['success'] && $updateFieldsResponse['response']['status'] == 200) {
                     $response = [
@@ -132,8 +132,6 @@ class CustomComponentFieldsController extends Controller
                         "status" => 400,
                     ];
             }
-
-
 
         return response()->json($response);
     }

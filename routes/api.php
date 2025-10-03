@@ -148,8 +148,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/delete-custom-components',[WordpressCustomTemplatePagesController::class,'deleteCustomComponents']);
     Route::get('/get-custom-components-by-type', [WordpressCustomTemplatePagesController::class, 'getCustomComponentsByType']);
     Route::post('/replace-custom-component',[WordpressCustomTemplatePagesController::class,'replaceCustomComponent']);
-
-    
+    Route::get('/get-custom-components-for-new-section', [WordpressCustomTemplatePagesController::class, 'getCustomComponentsForNewSection']);
+    Route::post('/add-new-custom-component-section',[WordpressCustomTemplatePagesController::class,'addNewCustomComponentSection']);
 });
 //End of Authenticated Group Routes
 
