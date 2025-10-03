@@ -380,6 +380,7 @@ class ComponentsControllers extends Controller
                             'meta1'      => $field->meta_key1,
                             'meta2'      => $field->meta_key2,
                             'page_id'   => $pageId,
+                            'component_unique_id' => $component['component_unique_id'],
                         ];
                     }),
                 ];

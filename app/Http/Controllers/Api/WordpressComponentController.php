@@ -172,7 +172,7 @@ class WordpressComponentController extends Controller
          }
          return $response;
      }
-    public function insertOrUpdateComponentFields($fieldsData, $websiteUrl)
+    public function insertOrUpdateComponentFields($fieldsData, $websiteUrl, $componentUniqueId)
     {
         $dataToSend = [];
 
@@ -195,7 +195,7 @@ class WordpressComponentController extends Controller
                 $dataToSend[$data['field_name']]['formId'] = $data['formId'];
             }
         }
-
+        $dataToSend['component_unique_id'] = $componentUniqueId;
 
         $addOrUpdateComponentFieldsUrl = $websiteUrl . 'wp-json/v1/update-component-fields';
         $addOrUpdateComponentFieldsResponse = Http::post($addOrUpdateComponentFieldsUrl, $dataToSend);
