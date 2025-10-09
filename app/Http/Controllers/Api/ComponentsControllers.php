@@ -249,7 +249,7 @@ class ComponentsControllers extends Controller
                 Log::info("Page '$page' created successfully on $website_domain.");
 
                 if (isset($responseBody['page_id'])) {
-                    $pageIds = $responseBody['page_id'];
+                    $pageIds[] = $responseBody['page_id'];
                 }
             } else {
                 Log::error("Failed to create page '$page' on $website_domain. Response: " . $createPageResponse->body());
