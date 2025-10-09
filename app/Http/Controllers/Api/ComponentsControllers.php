@@ -361,6 +361,9 @@ class ComponentsControllers extends Controller
                 if (in_array($component['type'], ['header', 'footer'])) {
                     // header/footer go to every page
                     $targetPageIds = $pageIds;
+                } elseif ($component['type'] === 'common_text') {
+                    // common_text goes to all pages except home (first page)
+                    $targetPageIds = array_slice($pageIds, 1); // skip first page
                 } else {
                     // all other components go only to the first page (home)
                     $targetPageIds = [$pageIds[0]];
@@ -399,6 +402,8 @@ class ComponentsControllers extends Controller
                     } else {
                         if ($component['type'] === 'header') {
                             $componentData['component_detail']['position'] = 1;
+                        } elseif ($component['type'] === 'common_text') {
+                            $componentData['component_detail']['position'] = 2; 
                         } elseif ($component['type'] === 'footer') {
                             $componentData['component_detail']['position'] = count($components);
                         } else {
@@ -468,14 +473,35 @@ class ComponentsControllers extends Controller
     private function getTemplateComponent($template_id)
     {
         if ($template_id) {
-            return Component::join('website_templates_components', 'components_crm.component_unique_id', '=', 'website_templates_components.component_unique_id')
-                ->join('website_templates', 'website_templates_components.template_id', '=', 'website_templates.id')
+            // Fetch template components
+            $templateComponents = Component::join(
+                    'website_templates_components', 
+                    'components_crm.component_unique_id', 
+                    '=', 
+                    'website_templates_components.component_unique_id'
+                )
+                ->join(
+                    'website_templates', 
+                    'website_templates_components.template_id', 
+                    '=', 
+                    'website_templates.id'
+                )
                 ->where('website_templates_components.template_id', $template_id)
                 ->where('website_templates.status', 'active')
                 ->select('components_crm.*')
-                ->with('formFields') // Select all columns from components_crm
+                ->with('formFields')
                 ->get();
+
+            // Fetch common_text components separately
+            $commonTextComponents = Component::where('type', 'common_text')
+                ->with('formFields')
+                ->get();
+
+            // Merge both collections
+            return $templateComponents->merge($commonTextComponents);
         }
+
+        return collect(); 
     }
     
     public function regenerateComponents(Request $request)
