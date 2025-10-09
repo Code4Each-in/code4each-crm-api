@@ -708,4 +708,46 @@ class WordpressCustomTemplatePagesController extends Controller
         return response()->json($response, $response['status']);
     }
 
+    /**
+     * THIS METHOD IS FOR ADDING GLOBAL SWITCH VALUE
+     */
+    public function addGobalSwitchValue(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'type'  => 'required',
+            'value'       => 'required',
+            'website_domain' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status'   => 400,
+                'success'  => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/add-global-switch-value';
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status']   = $wpResponse->status();
+            $response['success']  = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status']   = $wpResponse->status() ?? 400;
+            $response['success']  = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
+
 }
