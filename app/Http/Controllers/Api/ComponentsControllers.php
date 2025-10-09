@@ -132,9 +132,9 @@ class ComponentsControllers extends Controller
                     $template_id = $validate['template_id'];
                 }
 
-                $pageId = $this->createDefaultPages($website_domain);
+                $pageIds = $this->createDefaultPages($website_domain);
 
-                $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id, $pageId);
+                $result = $this->sendComponentToWordpress($agency_id, $website_domain ,$dataToSend, false, $template_id, $agency_website_id, $pageIds);
 
                 if ($result['success'] == true && $result['status'] == 200) {
 
@@ -230,7 +230,7 @@ class ComponentsControllers extends Controller
 
     public function createDefaultPages($website_domain){
         $defaultPages = ['Home', 'About Us', 'Contact Us', 'Privacy Policy', 'Terms & Conditions'];
-        $pageId = null;
+        $pageIds = null;
 
         foreach ($defaultPages as $page) {
             $createPageUrl = $website_domain . '/wp-json/v1/add-defaultpages';
@@ -248,18 +248,16 @@ class ComponentsControllers extends Controller
                 $responseBody = $createPageResponse->json();
                 Log::info("Page '$page' created successfully on $website_domain.");
 
-                if ($page === 'Home' && isset($responseBody['page_id'])) {
-                    $pageId = $responseBody['page_id'];
+                if (isset($responseBody['page_id'])) {
+                    $pageIds = $responseBody['page_id'];
                 }
             } else {
                 Log::error("Failed to create page '$page' on $website_domain. Response: " . $createPageResponse->body());
             }
         }
 
-        return $pageId; 
+        return $pageIds; 
     }
-
-
     private function uploadLogoToWordpress($websiteUrl, $logo)
     {
         $thirdPartyUrl = rtrim($websiteUrl, '/') . '/wp-json/v1/logo/';
@@ -301,10 +299,10 @@ class ComponentsControllers extends Controller
         }
     }
 
-    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false, $pageId = null)
+    public function sendComponentToWordpress($agency_id, $websiteUrl,$Data = false, $regenerateFlag = false, $template_id = false, $agency_website_id = false, $pageIds = [])
     {   
-        $pageId = $pageId ?? null;
-            $response = [
+        $pageIds = $pageIds ?? null;
+        $response = [
             'success' => false,
         ];
         
@@ -359,45 +357,57 @@ class ComponentsControllers extends Controller
            }
             $position = 1;
             foreach ($components as $component) {
-                $componentData = [
-                    'component_detail' => [
-                        'component_name' => $component['component_name'],
-                        'path' => $component['path'],
-                        'type' => $component['type'],
-                        'position' => null,
-                        'component_unique_id' => $component['component_unique_id'],
-                        'status' => $component['status'],
-                        'page_id' => $pageId,
-                    ],
-                    'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
-                        ->select('component_id', 'name', 'type', 'path', 'version')
-                        ->get(),
-                    'component_meta_fields' => $component->formFields->map(function($field) use ($pageId) {
-                        return [
-                            'name'       => $field->field_name,
-                            'value'      => $field->default_value,
-                            'type'       => $field->field_type,
-                            'meta1'      => $field->meta_key1,
-                            'meta2'      => $field->meta_key2,
-                            'page_id'   => $pageId,
-                        ];
-                    }),
-                ];
-                if(isset($component['template_id'])){
-                    $componentData['component_detail']['position'] = $component['position'];
-                }else{
-                    if ($component['type'] === 'header') {
-                        $componentData['component_detail']['position'] = 1;
-                    } elseif ($component['type'] === 'footer') {
-                        $componentData['component_detail']['position'] = count($components);
-                    } else {
-                        $componentData['component_detail']['position'] = $position + 1;
-                        $position++;
-                    }
+                $targetPageIds = [];
+                if (in_array($component['type'], ['header', 'footer'])) {
+                    // header/footer go to every page
+                    $targetPageIds = $pageIds;
+                } else {
+                    // all other components go only to the first page (home)
+                    $targetPageIds = [$pageIds[0]];
                 }
-               
-                $postUrl = $websiteUrl . 'wp-json/v1/component';
-                $componentResponse = Http::post($postUrl, $componentData);
+
+                foreach ($targetPageIds as $pageId) {
+
+                    $componentData = [
+                        'component_detail' => [
+                            'component_name'     => $component['component_name'],
+                            'path'               => $component['path'],
+                            'type'               => $component['type'],
+                            'position'           => null,
+                            'component_unique_id'=> $component['component_unique_id'],
+                            'status'             => $component['status'],
+                            'page_id'            => $pageId,
+                        ],
+                        'component_dependencies' => ComponentDependency::where('component_id', $component['id'])
+                            ->select('component_id', 'name', 'type', 'path', 'version')
+                            ->get(),
+                        'component_meta_fields' => $component->formFields->map(function ($field) use ($pageId) {
+                            return [
+                                'name'     => $field->field_name,
+                                'value'    => $field->default_value,
+                                'type'     => $field->field_type,
+                                'meta1'    => $field->meta_key1,
+                                'meta2'    => $field->meta_key2,
+                                'page_id'  => $pageId,
+                            ];
+                        }),
+                    ];
+
+                    // Set position
+                    if (isset($component['template_id'])) {
+                        $componentData['component_detail']['position'] = $component['position'];
+                    } else {
+                        if ($component['type'] === 'header') {
+                            $componentData['component_detail']['position'] = 1;
+                        } elseif ($component['type'] === 'footer') {
+                            $componentData['component_detail']['position'] = count($components);
+                        } else {
+                            $componentData['component_detail']['position'] = ++$position;
+                        }
+                    }
+                    $postUrl = $websiteUrl . 'wp-json/v1/component';
+                    $componentResponse = Http::post($postUrl, $componentData);
+                }
                 if ($componentResponse->successful()) {
                     $data['response'] = $componentResponse->json();
                     $data['status'] = $componentResponse->status();
@@ -467,7 +477,6 @@ class ComponentsControllers extends Controller
                 ->get();
         }
     }
-    
     
     public function regenerateComponents(Request $request)
     {
