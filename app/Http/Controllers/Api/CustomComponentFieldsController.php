@@ -105,16 +105,31 @@ class CustomComponentFieldsController extends Controller
             'success' => false,
             'status' => 400,
         ];
+        $validator = Validator::make($request->all(), [
+            'website_url' => 'required|string',
+            'component_unique_id' => 'required|string',
+            'section_type' => 'required|string',
+            'pageId' => 'required|integer',
+            'form_fields' => 'required|array',
+            'form_fields.*.field_name' => 'required|string',
+            'form_fields.*.field_value' => 'nullable|string',
+            'form_fields.*.type' => 'nullable|string',
+            'form_fields.*.meta1' => 'nullable|string',
+            'form_fields.*.meta2' => 'nullable|string',
+            'form_fields.*.formId' => 'nullable|string',
+            'form_fields.*.field_type' => 'nullable|string',
+        ]);
+        $validatedData = $validator->validated();
+        $componentUniqueId = $validatedData['component_unique_id'];
+        $type = $validatedData['section_type'];
+        $pageId = $validatedData['pageId'];
+        $website_url =  $validatedData['website_url'];
 
-        $validated = $request->validated();
-        $componentUniqueId = $validated['component_unique_id'];
-        $website_url =  $validated['website_url'];
-
-            $formFields = $validated['form_fields'];
+            $formFields = $validatedData['form_fields'];
             $component = Component::where('status','active')->where('component_unique_id', $componentUniqueId)->select('id', 'type', 'category')->first();
 
             if ($component) {
-                $updateFieldsResponse = $this->wordpressComponentClass->insertOrUpdateComponentFields($formFields, $website_url, $componentUniqueId);
+                $updateFieldsResponse = $this->wordpressComponentClass->insertOrUpdateComponentFields($formFields, $website_url, $componentUniqueId, $type, $pageId);
 
                 if ($updateFieldsResponse['success'] && $updateFieldsResponse['response']['status'] == 200) {
                     $response = [

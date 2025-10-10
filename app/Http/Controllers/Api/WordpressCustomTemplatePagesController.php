@@ -304,7 +304,7 @@ class WordpressCustomTemplatePagesController extends Controller
         $validatedData = $validator->validated();
 
         // === Handle header type file upload locally ===
-        $fileTypes = ['header', 'about_section', 'service_section', 'footer'];
+        $fileTypes = ['header', 'about_section', 'service_section', 'footer', 'common_text'];
         if (in_array($request->type, $fileTypes) && $request->hasFile('file')) {
             $file = $request->file('file');
             // Save file to /storage/app/public/HeaderImages
