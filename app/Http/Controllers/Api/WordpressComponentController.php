@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 
 class WordpressComponentController extends Controller
 {
-    public static function deleteComponent($websiteUrl = false, $componentUniqueId = false)
+    public static function deleteComponent($websiteUrl = false, $componentUniqueId = false, $pageId = false, $type = false)
     {
         if(!$websiteUrl){
             return response()->json(["error" => "website Url is required to Proceed."]);
@@ -19,7 +19,12 @@ class WordpressComponentController extends Controller
             return response()->json(["error" => "Component Unique Id is required to Proceed."]);
         }
         $deleteComponentUrl = $websiteUrl . '/wp-json/v1/component';
-        $deleteComponentResponse = Http::delete($deleteComponentUrl,$componentUniqueId);
+        $payload = [
+            'component_unique_id' => $componentUniqueId,
+            'page_id' => $pageId,
+            'section_type' => $type
+        ];
+        $deleteComponentResponse = Http::delete($deleteComponentUrl,$payload);
             if ($deleteComponentResponse->successful()) {
                 // $responseData = $getActiveComponentResponse->json();
                 $response['response'] =$deleteComponentResponse->json();

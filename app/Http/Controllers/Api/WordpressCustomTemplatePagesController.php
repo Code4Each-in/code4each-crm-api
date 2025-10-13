@@ -478,8 +478,10 @@ class WordpressCustomTemplatePagesController extends Controller
         }
         $websiteUrl = $request->input('website_domain');
         $oldComponentUniqueId['component_unique_id'] = $validatedData['old_component_id'];
+        $page_id['page_id'] = $validatedData['page_id'];
+        $type['section_type'] = $validatedData['type'];
 
-        $deleteComponentResponse = WordpressComponentController::deleteComponent($websiteUrl,$oldComponentUniqueId);
+        $deleteComponentResponse = WordpressComponentController::deleteComponent($websiteUrl,$oldComponentUniqueId, $page_id, $type);
         if($deleteComponentResponse['success'] == true && $deleteComponentResponse['response']['status'] == 200 ){
             $componentPosition = $deleteComponentResponse['response']['data']['position'];
             $componentDependencies = $component->dependencies;
@@ -523,6 +525,7 @@ class WordpressCustomTemplatePagesController extends Controller
                 'component_meta_fields' => $formFieldsValues,
                 'old_component_id' => $validatedData['old_component_id'],
                 'page_id' => $validatedData['page_id'],
+                'type' => $validatedData['type'],
             ];
             $postApiUrl = $websiteUrl . '/wp-json/v1/replace-custom-component';
             $wpResponse = Http::post($postApiUrl, $component);
