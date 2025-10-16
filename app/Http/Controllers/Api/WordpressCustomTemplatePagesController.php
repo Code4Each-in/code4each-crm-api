@@ -397,33 +397,32 @@ class WordpressCustomTemplatePagesController extends Controller
             "success" => false,
             "status"  => 400,
         ];
+
         $type = request()->input('type');
-        if($type){
-            $componentData = Component::where('type',$type)->where('status','active')->get();
-            $componentDetail = [];
-            foreach($componentData as $data){
-               $component = [];
-               $component['id'] = $data->id;
-               $component['component_unique_id'] = $data->component_unique_id;
-               $component['preview'] = '/storage/'.$data->preview;
-               $component['type'] = $data->type;
-               $component['category'] = $data->category;
-               $componentDetail[] = $component;
+        $query = Component::where('status', 'active');
+
+        if ($type) {
+            if (in_array($type, ['common_text', 'contact_form'])) {
+                $query->whereIn('type', ['common_text', 'contact_form']);
+            } else {
+                $query->where('type', $type);
             }
-        }else{
-             $componentData = Component::where('status','active')->get();
-             $componentDetail = [];
-             foreach($componentData as $data){
-                $component = [];
-                $component['id'] = $data->id;
-                $component['component_unique_id'] = $data->component_unique_id;
-                $component['preview'] = '/storage/'.$data->preview;
-                $component['type'] = $data->type;
-                $component['category'] = $data->category;
-                $componentDetail[] = $component;
-             }
         }
-        if($componentDetail){
+
+        $componentData = $query->get();
+
+        $componentDetail = [];
+        foreach ($componentData as $data) {
+            $componentDetail[] = [
+                'id' => $data->id,
+                'component_unique_id' => $data->component_unique_id,
+                'preview' => '/storage/' . $data->preview,
+                'type' => $data->type,
+                'category' => $data->category,
+            ];
+        }
+
+        if (!empty($componentDetail)) {
             $response = [
                 "message" => "Result Fetched Successfully.",
                 'component' => $componentDetail,
@@ -738,6 +737,50 @@ class WordpressCustomTemplatePagesController extends Controller
 
         $websiteUrl = $request->input('website_domain');
         $postApiUrl = $websiteUrl . '/wp-json/v1/add-global-switch-value';
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status']   = $wpResponse->status();
+            $response['success']  = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status']   = $wpResponse->status() ?? 400;
+            $response['success']  = false;
+        }
+
+        return response()->json($response, $response['status']);
+    }
+
+    /**
+     * THIS METHOD IS FOR ADDING FORM
+     */
+    public function addForm(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'form_id'  => 'required',
+            'type'       => 'required',
+            'website_domain' => 'required',
+            'field_name' => 'required',
+            'component_uniqueId' => 'required',
+            'page_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status'   => 400,
+                'success'  => false
+            ], 400);
+        }
+
+        $validatedData = $validator->validated();
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/add-form';
         $wpResponse = Http::post($postApiUrl, $validatedData);
 
         if ($wpResponse->successful()) {
