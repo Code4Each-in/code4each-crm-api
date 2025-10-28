@@ -150,7 +150,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/replace-custom-component',[WordpressCustomTemplatePagesController::class,'replaceCustomComponent']);
     Route::get('/get-custom-components-for-new-section', [WordpressCustomTemplatePagesController::class, 'getCustomComponentsForNewSection']);
     Route::post('/add-new-custom-component-section',[WordpressCustomTemplatePagesController::class,'addNewCustomComponentSection']);
-    Route::post('/add-gobal-switch-value',[WordpressCustomTemplatePagesController::class,'addGobalSwitchValue']);
+    Route::post('/add-global-switch-value',[WordpressCustomTemplatePagesController::class,'addGlobalSwitchValue']);
     Route::post('/add-form',[WordpressCustomTemplatePagesController::class,'addForm']);
 });
 //End of Authenticated Group Routes
