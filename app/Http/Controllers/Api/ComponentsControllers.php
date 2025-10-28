@@ -45,11 +45,11 @@ class ComponentsControllers extends Controller
             'others_category_name' => 'nullable',
             'description' => 'nullable|string',
             'phone' => 'nullable',
-            'address' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'country' => 'required',
-            'zip'  => 'required',
+            'address' => 'nullable',
+            'city' => 'nullable',
+            'state' => 'nullable',
+            'country' => 'nullable',
+            'zip'  => 'nullable',
             'business_name' => 'required',
             'logo' => 'nullable',
             'template_id' => 'nullable',
@@ -58,6 +58,9 @@ class ComponentsControllers extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
         $validate = $validator->valid();
+        $validate = array_map(function($value){
+            return $value === "" ? null : $value;
+        }, $validate);
         try {
             DB::beginTransaction();
             //Get unassigned Website from website table
@@ -86,14 +89,14 @@ class ComponentsControllers extends Controller
             // Create Agency Website  Detail For Creating Website
             $agencyWebsiteDetails = AgencyWebsite::create([
                 'website_category_id' => $validate['category_id'],
-                'others_category_name' => $othersCategoryName,
-                'phone' => $phone,
-                'address' => $validate['address'],
-                'city' => $validate['city'],
-                'state' => $validate['state'],
-                'country' => $validate['country'],
-                'pin' => $validate['zip'],
-                'description'  => $description,
+                'others_category_name' => $validate['others_category_name'] ?? null,
+                'phone' => $validate['phone'] ?? null,
+                'address' => $validate['address'] ?? null,
+                'city' => $validate['city'] ?? null,
+                'state' => $validate['state'] ?? null,
+                'country' => $validate['country'] ?? null,
+                'pin' => $validate['zip'] ?? null,
+                'description'  => $validate['description'] ?? null,
                 'agency_id' => $validate['agency_id'],
                 'business_name' => $validate['business_name'],
                 'email' => auth()->user()->email,
@@ -329,6 +332,8 @@ class ComponentsControllers extends Controller
                     "pincode" => ["value" => $Data["pincode"]],
                     "description" => ["value" => $Data["description"]],
                     "email" => ["value" => $Data["email"]],
+                    "global-header-value" => ["value" => "on", "type" => "switch"],
+                    "global-footer-value" => ["value" => "on", "type" => "switch"],
                 ];
                 $addWebsitesGlobalVariablesResponse = Http::post($addWebsitesGlobalVariablesUrl,$data);
                 if(!$addWebsitesGlobalVariablesResponse->successful()){

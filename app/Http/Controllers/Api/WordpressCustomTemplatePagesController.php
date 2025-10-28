@@ -713,7 +713,7 @@ class WordpressCustomTemplatePagesController extends Controller
     /**
      * THIS METHOD IS FOR ADDING GLOBAL SWITCH VALUE
      */
-    public function addGobalSwitchValue(Request $request){
+    public function addGlobalSwitchValue(Request $request){
         $response = [
             'success' => false,
             'status' => 400,
