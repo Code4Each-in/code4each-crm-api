@@ -29,11 +29,12 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         VerifyEmail::createUrlUsing(function ($notifiable) {
+        $encryptedId = Crypt::encryptString($notifiable->getKey());
         $params = [
             "expires" => Carbon::now()
             ->addMinutes(60)
             ->getTimestamp(),
-            "id" => $notifiable->getKey(),
+            "id" => $encryptedId,
             "hash" => sha1($notifiable->getEmailForVerification()),
         ];
 
