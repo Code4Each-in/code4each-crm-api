@@ -192,6 +192,29 @@ class ComponentsControllers extends Controller
                     ];
                     $recipient->notify(new CommonEmailNotification($messages));
 
+                    // ---------------------------------------------------------------
+                    // Send Mail to Super Admin
+                    // ---------------------------------------------------------------
+
+                    $superAdmin = User::where('role', 'super_admin')->first();
+
+                    if ($superAdmin) {
+                        $adminMessage = [
+                            'greeting-text' => "Hello Admin,",
+                            'subject' => 'New Domain Created',
+                            'additional-info' => '',
+                            'lines_array' => [
+                                'title' => 'A new domain has been successfully created.',
+                                'body-text' => 'Details are given below:',
+                                'special_Agency_Name' => $agencyWebsiteDetails->business_name,
+                                'special_Domain_Name' => $websiteUrl,
+                                'special_Created_By' => auth()->user()->name . ' (' . auth()->user()->email . ')',
+                            ],
+                        ];
+
+                        $superAdmin->notify(new CommonEmailNotification($adminMessage));
+                    }
+
                     $response = [
                         'message' => "Agency Website Detail Saved Successfully.",
                         'website_domain' => $website_domain,
