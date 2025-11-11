@@ -12,6 +12,7 @@ class UserBilling extends Model
     protected $table = 'user_billing';
 
     protected $fillable = [
+        'user_id',
         'name',
         'email',
         'phone',

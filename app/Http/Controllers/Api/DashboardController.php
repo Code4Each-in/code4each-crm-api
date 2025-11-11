@@ -86,7 +86,7 @@ class DashboardController extends Controller
                     $totalDays = 6 * 30; 
                 }
                 elseif (strpos($planName, 'year') !== false || strpos($planName, 'yearly') !== false) {
-                    $totalDays = 12 * 30; 
+                    $totalDays = 365; 
                 }
                 else {
                     $totalDays = 15;

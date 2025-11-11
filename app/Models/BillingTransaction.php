@@ -14,7 +14,10 @@ class BillingTransaction extends Model
     protected $fillable = [
         'user_billing_id',
         'plan_id',
+        'user_id',
         'status',
+        'agency_id',
+        'website_id',
         'payment_id',
         'order_id',
         'amount',

@@ -19,7 +19,7 @@ class RazorpayWebhookController extends Controller
             'status' => 400,
         ];
         $validator = Validator::make($request->all(), [
-            'user_id' => 'nullable',
+            'user_id' => 'required',
             'name' => 'required',
             'email' => 'required',
             'phone' => 'required|string',
@@ -40,6 +40,8 @@ class RazorpayWebhookController extends Controller
         $updateBillingDetail = UserBilling::updateOrCreate(
             [
                 'user_id' => $validate['user_id'],
+            ],
+            [
                 'name' => $validate['name'],
                 'email' => $validate['email'],
                 'phone' => $validate['phone'],
@@ -84,12 +86,18 @@ class RazorpayWebhookController extends Controller
             $payment = $data['payload']['payment']['entity'];
             $billing_id = $payment['notes']['billing_id'] ?? null;
             $plan_id    = $payment['notes']['plan_id'] ?? null;
+            $user_id    = $payment['notes']['user_id'] ?? null;
+            $agency_id    = $payment['notes']['agency_id'] ?? null;
+            $website_id    = $payment['notes']['website_id'] ?? null;
             $payment_details = json_encode($payment);
             $card_details = isset($payment['card']) ? json_encode($payment['card']) : null;
 
             BillingTransaction::create([
                 'user_billing_id' => $billing_id, 
+                'user_id' => $user_id, 
                 'plan_id'         => $plan_id, 
+                'agency_id'         => $agency_id, 
+                'website_id'         => $website_id, 
                 'status'          => $payment['status'],
                 'payment_id'      => $payment['id'],
                 'order_id'        => $payment['order_id'],
