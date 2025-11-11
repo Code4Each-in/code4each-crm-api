@@ -235,6 +235,7 @@ public function subscriptionPayment(Request $request)
     $website_id = $request->input('website_id');
     $agency_id = $request->input('agency_id');
     $plan_id = $request->input('plan_id');
+    $amount = $request->input('amount');
 
     $api = new Api(env('RZP_KEY'), env('RZP_SECRET'));
 
@@ -250,7 +251,6 @@ public function subscriptionPayment(Request $request)
 
         // $price = Plan::where('razor_id', $payment_id)->pluck('price')->first();
         $plan = Plan::where('id', $plan_id)->first(['id', 'price', 'type']);
-        $price = $plan->price;
         $plan_id_int = $plan->id;
         $planexpired = ($plan->type == 'monthly') ? 30 : (($plan->type == 'yearly') ? 365 : 30);
     
@@ -261,7 +261,7 @@ public function subscriptionPayment(Request $request)
             'user_id' => $user_id,
             'website_id' => $website_id,
             'agency_id' => $agency_id,
-            'amount' => $price,
+            'amount' => $amount,
             'signature' => $signature
         ]);
 
@@ -373,7 +373,10 @@ public function createOrder(Request $request)
             'payment_capture' => 1, // Auto capture
             'notes' => [
                 'billing_id' => $billing_id,
-                'plan_id' => $plan_id
+                'plan_id' => $plan_id,
+                'agency_id' => $request->input('agency_id'),
+                'website_id' => $request->input('website_id'),
+                'user_id' => $request->input('user_id'),
             ]
         ];
 
