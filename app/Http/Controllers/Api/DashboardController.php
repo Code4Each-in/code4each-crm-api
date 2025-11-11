@@ -13,9 +13,43 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Mockery\Undefined;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+
+    // public function index()
+    // {
+    //     $response = [
+    //         'success' => false,
+    //         'status' => 400,
+    //     ];
+    //     //Check if verifyEmail Middleware have verification_notification Message
+    //     if (session()->has('verification_notice')) {
+    //         $response['notification'] = session('verification_notice');
+    //         // $response['resend-link'] = route('verification.resend');
+    //         session()->forget('verification_notice');
+    //     }
+    //     //Get Auth User Using laravel auth method
+    //     $user = User::with(['agency','agency.agencyWebsites','agency.agencyWebsites.websiteDetail','currentPlans.plan'])->where('id',auth()->user()->id)->first();
+    //     $response['user'] = $user;
+
+    // if ($user && $user->agency) {
+    //     $agencyWebsitesInfo = [];
+    
+    //     foreach ($user->agency->agencyWebsites as $website) {
+    //         $agencyWebsitesInfo[] = $website;
+    //     }
+    // } 
+    
+    // $response['agency_website_info'] = $agencyWebsitesInfo ?? [];
+
+    //     $response['message'] =  "Welcome to the dashboard.";
+    //     $response['success'] = true;
+    //     $response['status'] = 200;
+
+    //     return response()->json($response);
+    // }
 
     public function index()
     {
@@ -23,27 +57,50 @@ class DashboardController extends Controller
             'success' => false,
             'status' => 400,
         ];
-        //Check if verifyEmail Middleware have verification_notification Message
+
         if (session()->has('verification_notice')) {
             $response['notification'] = session('verification_notice');
-            // $response['resend-link'] = route('verification.resend');
             session()->forget('verification_notice');
         }
-        //Get Auth User Using laravel auth method
-        $user = User::with(['agency','agency.agencyWebsites','agency.agencyWebsites.websiteDetail','currentPlans.plan'])->where('id',auth()->user()->id)->first();
-        $response['user'] = $user;
 
-    if ($user && $user->agency) {
-        $agencyWebsitesInfo = [];
-    
-        foreach ($user->agency->agencyWebsites as $website) {
-            $agencyWebsitesInfo[] = $website;
+        $user = User::with(['agency','agency.agencyWebsites','agency.agencyWebsites.websiteDetail','currentPlans.plan'])
+                    ->where('id',auth()->user()->id)
+                    ->first();
+
+        if ($user && $user->currentPlans && count($user->currentPlans) > 0) {
+
+            foreach ($user->currentPlans as $plan) {
+
+                if (!$plan->website_start_date || !$plan->plan) {
+                    $plan->planexpired = 0;
+                    continue;
+                }
+
+                $startDate = Carbon::parse($plan->website_start_date);
+                $today     = Carbon::now();
+                $planName = strtolower($plan->plan->name);
+                if (strpos($planName, '15 days') !== false) {
+                    $totalDays = 15;
+                }
+                elseif (strpos($planName, '6 month') !== false) {
+                    $totalDays = 6 * 30; 
+                }
+                elseif (strpos($planName, 'year') !== false || strpos($planName, 'yearly') !== false) {
+                    $totalDays = 12 * 30; 
+                }
+                else {
+                    $totalDays = 15;
+                }
+
+                $usedDays = $startDate->diffInDays($today);
+                $remainingDays = $totalDays - $usedDays;
+                $plan->planexpired = max($remainingDays, 0);
+            }
         }
-    } 
-    
-    $response['agency_website_info'] = $agencyWebsitesInfo ?? [];
 
-        $response['message'] =  "Welcome to the dashboard.";
+        $response['user'] = $user;
+        $response['agency_website_info'] = $user->agency?->agencyWebsites ?? [];
+        $response['message'] = "Welcome to the dashboard.";
         $response['success'] = true;
         $response['status'] = 200;
 
