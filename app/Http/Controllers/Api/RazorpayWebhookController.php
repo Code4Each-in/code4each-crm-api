@@ -19,6 +19,7 @@ class RazorpayWebhookController extends Controller
             'status' => 400,
         ];
         $validator = Validator::make($request->all(), [
+            'user_id' => 'nullable',
             'name' => 'required',
             'email' => 'required',
             'phone' => 'required|string',
@@ -38,6 +39,7 @@ class RazorpayWebhookController extends Controller
 
         $updateBillingDetail = UserBilling::updateOrCreate(
             [
+                'user_id' => $validate['user_id'],
                 'name' => $validate['name'],
                 'email' => $validate['email'],
                 'phone' => $validate['phone'],
