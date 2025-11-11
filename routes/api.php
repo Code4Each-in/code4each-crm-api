@@ -155,10 +155,10 @@ Route::middleware('auth:api')->group(function () {
 
     //Billing & Subscription Routes
     Route::post('/add-userbillingdetails',[RazorpayWebhookController::class,'addUserBillingDetails']);
-    Route::post('/razorpay/webhook', [RazorpayWebhookController::class, 'handle']);
 });
-//End of Authenticated Group Routes
 
+//End of Authenticated Group Routes
+Route::post('/razorpay/webhook', [RazorpayWebhookController::class, 'handle']);
 Route::get('get-plans',[SubscriptionPaymentController::class,'fetchplans']);
 Route::post('/feedback',[FeedBackController::class,'feedback']);
 Route::post('pre-booking', [PreBookingController::class,'saveEmailForPreBooking']);
