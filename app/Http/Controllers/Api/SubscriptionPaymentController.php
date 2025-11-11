@@ -13,6 +13,8 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\CurrentPlan;
 use App\Models\PlanLog;
+use Illuminate\Support\Facades\Validator;
+use App\Models\UserBilling;
 
 class SubscriptionPaymentController extends Controller
 {
@@ -351,25 +353,35 @@ public function createOrder(Request $request)
 {
     try {
         $api = new Api(env('RZP_KEY'), env('RZP_SECRET'));
+        $razor_id = $request->input('razor_id');
         $plan_id = $request->input('plan_id');
-        $plan = Plan::where("id", $plan_id)->first();
+        $amount = $request->input('amount');
+        $billing_id  = $request->input('billing_id');
+        $plan = Plan::where("razor_id", $razor_id)->first();
 
         if (!$plan) {
             return response()->json(['error' => 'Invalid Plan'], 400);
         }
+        if (!$amount) {
+            $amount = $plan->price;
+        }
         
         $orderData = [
             'receipt'         => 'order_rcptid_11',
-            'amount'          => $plan->price * 100,
+            'amount'          => $amount,
             'currency'        => 'INR',
-            'payment_capture' => 1 // Auto capture
+            'payment_capture' => 1, // Auto capture
+            'notes' => [
+                'billing_id' => $billing_id,
+                'plan_id' => $plan_id
+            ]
         ];
 
         $razorpayOrder = $api->order->create($orderData);
 
         return response()->json([
             'order_id' => $razorpayOrder['id'],
-            'amount'   => $plan->price * 100,
+            'amount'   => $amount,
             "message" => "Order Created Successfully!",
             "success" =>true, 
             "status" =>200
@@ -391,5 +403,4 @@ public function createOrder(Request $request)
         return response()->json($response,401);
     }
 }
-
 }

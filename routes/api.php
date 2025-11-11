@@ -27,7 +27,7 @@ use App\Http\Controllers\Api\WordpressMenusController;
 use App\Http\Controllers\Api\SubscriptionPaymentController;
 use App\Http\Controllers\Api\WordpressCustomFormController;
 use App\Http\Controllers\Api\WordpressCustomTemplatePagesController;
-
+use App\Http\Controllers\Api\RazorpayWebhookController;
 
 
 /*
@@ -69,7 +69,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout',[AuthController::class,'logout']);
     
     Route::post('subscriptionPayment',[SubscriptionPaymentController::class,'subscriptionPayment']);
-    Route::get('get-plans',[SubscriptionPaymentController::class,'fetchplans']);
+    // Route::get('get-plans',[SubscriptionPaymentController::class,'fetchplans']);
     Route::post('create-order',[SubscriptionPaymentController::class,'createOrder']);
     //End Unverified Routes
 
@@ -152,16 +152,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/add-new-custom-component-section',[WordpressCustomTemplatePagesController::class,'addNewCustomComponentSection']);
     Route::post('/add-global-switch-value',[WordpressCustomTemplatePagesController::class,'addGlobalSwitchValue']);
     Route::post('/add-form',[WordpressCustomTemplatePagesController::class,'addForm']);
+
+    //Billing & Subscription Routes
+    Route::post('/add-userbillingdetails',[RazorpayWebhookController::class,'addUserBillingDetails']);
+    Route::post('/razorpay/webhook', [RazorpayWebhookController::class, 'handle']);
 });
 //End of Authenticated Group Routes
 
-
+Route::get('get-plans',[SubscriptionPaymentController::class,'fetchplans']);
 Route::post('/feedback',[FeedBackController::class,'feedback']);
 Route::post('pre-booking', [PreBookingController::class,'saveEmailForPreBooking']);
-
-//------------
-
-
-
-
-
