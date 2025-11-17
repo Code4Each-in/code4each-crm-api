@@ -28,7 +28,7 @@ class RazorpayWebhookController extends Controller
             'zip' => 'required|string',
             'country' => 'required|string',
             'agency_id' => 'required',
-            'website_id' => 'required',
+            'website_id' => 'nullable',
             'plan_id' => 'required',
         ]);
 

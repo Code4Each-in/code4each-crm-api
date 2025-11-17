@@ -15,6 +15,8 @@ use App\Models\CurrentPlan;
 use App\Models\PlanLog;
 use Illuminate\Support\Facades\Validator;
 use App\Models\UserBilling;
+use App\Models\User;
+use App\Models\AffiliateEarnings;
 
 class SubscriptionPaymentController extends Controller
 {
@@ -226,8 +228,6 @@ public function handlePaymentNotification(Request $request)
 
 public function subscriptionPayment(Request $request)
 {   
-
-    // dd( $request);
     $payment_id = $request->input('razorpay_payment_id');
     $order_id = $request->input('razorpay_order_id');
     $signature = $request->input('razorpay_signature');
@@ -357,6 +357,8 @@ public function createOrder(Request $request)
         $plan_id = $request->input('plan_id');
         $amount = $request->input('amount');
         $billing_id  = $request->input('billing_id');
+        $user_id  = $request->input('user_id');
+        $amountWithoutGst = $request->input('total_amount_without_gst');
         $plan = Plan::where("razor_id", $razor_id)->first();
 
         if (!$plan) {
@@ -376,11 +378,35 @@ public function createOrder(Request $request)
                 'plan_id' => $plan_id,
                 'agency_id' => $request->input('agency_id'),
                 'website_id' => $request->input('website_id'),
-                'user_id' => $request->input('user_id'),
+                'user_id' => $user_id,
             ]
         ];
 
         $razorpayOrder = $api->order->create($orderData);
+
+        // -------------------------
+        // AFFILIATE 10% EARNING LOGIC
+        // -------------------------
+        $user = User::find($user_id);
+
+        if ($user && $user->referred_by) {
+
+            $agent = User::find($user->referred_by);
+
+            if ($agent) {
+
+                $commissionAmount = number_format($amountWithoutGst * 0.10, 2, '.', '');
+
+                // Insert into affiliate_earnings
+                AffiliateEarnings::create([
+                    'agent_id'      => $agent->id,
+                    'referral_code' => $agent->referral_code,
+                    'amount'        => $commissionAmount,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]);
+            }
+        }
 
         return response()->json([
             'order_id' => $razorpayOrder['id'],

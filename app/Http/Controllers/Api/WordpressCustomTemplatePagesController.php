@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Component;
 use App\Models\ComponentFormFields;
 use Illuminate\Support\Arr;
+use App\Models\User;
+use App\Models\ReferralClick;
 
 class WordpressCustomTemplatePagesController extends Controller
 {
