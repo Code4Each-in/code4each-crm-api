@@ -29,8 +29,10 @@ class RegistrationController extends Controller
             // 'description' => 'nullable|string',
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            // 'phone' => 'required',
+            'phone' => 'nullable',
             'password' => 'required',
+            'user_type' => 'required',
+            'referral_code' => 'nullable',
         ], [
             'email.unique' => 'This email is already in use, please try with some other email address.',
         ]);
@@ -39,6 +41,8 @@ class RegistrationController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
         $validate = $validator->valid();
+
+        $agentReferralCode = User::where('referral_code', $validate['referral_code'])->first('id');
         try {
             DB::beginTransaction();
 
@@ -55,10 +59,16 @@ class RegistrationController extends Controller
             $userObj->agency_id = $agencyObj->id;
             $userObj->name = $validate['name'];
             $userObj->email = $validate['email'];
-            // $userObj->phone = $validate['phone'];
+            $userObj->phone = $validate['phone'];
             $userObj->role = "admin";
-            $userObj->user_type = "user";
+            $userObj->user_type = $validate['user_type'];
             $userObj->password = Hash::make($validate['password']);
+            if ($validate['user_type'] === 'agent') {
+                $userObj->referral_code = strtoupper(Str::random(8));
+            } else {
+                $userObj->referral_code = null;
+            }
+            $userObj->referred_by = $agentReferralCode ? $agentReferralCode->id : null;
             $userObj->save();
 
             DB::commit();

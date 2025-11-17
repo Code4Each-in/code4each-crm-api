@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\SubscriptionPaymentController;
 use App\Http\Controllers\Api\WordpressCustomFormController;
 use App\Http\Controllers\Api\WordpressCustomTemplatePagesController;
 use App\Http\Controllers\Api\RazorpayWebhookController;
+use App\Http\Controllers\Api\AffiliateControllers;
 
 
 /*
@@ -155,10 +156,23 @@ Route::middleware('auth:api')->group(function () {
 
     //Billing & Subscription Routes
     Route::post('/add-userbillingdetails',[RazorpayWebhookController::class,'addUserBillingDetails']);
+
+    // Referred Users Routes
+    Route::get('/get-referred-users',[AffiliateControllers::class,'getReferredUsers']);
+    Route::get('/get-total-referred-users',[AffiliateControllers::class,'getTotalReferredUsers']);
+    Route::get('/get-total-earnings',[AffiliateControllers::class,'getTotalEarnings']);
+    Route::get('/get-total-withdrawal-amount',[AffiliateControllers::class,'getTotalWithdrawalAmount']);
+    Route::get('/get-monthly-earnings',[AffiliateControllers::class,'getMonthlyEarnings']);
+    Route::get('/get-withdrawal-history',[AffiliateControllers::class,'getWithdrawalHistory']);
+    Route::get('/get-referred-users-plan-history',[AffiliateControllers::class,'getReferredUsersPlanHistory']);
+    Route::post('/post-withdrawal-data',[AffiliateControllers::class,'postWithdrawalData']);
+    Route::get('/get-affiliate-account-details',[AffiliateControllers::class,'getAffiliateAccountDetails']);
 });
 
 //End of Authenticated Group Routes
+Route::post('/track-referral-click',[AffiliateControllers::class,'trackReferralClick']);
 Route::post('/razorpay/webhook', [RazorpayWebhookController::class, 'handle']);
 Route::get('get-plans',[SubscriptionPaymentController::class,'fetchplans']);
+Route::get('/get-affiliate-stats',[AffiliateControllers::class,'getAffiliateStats']);
 Route::post('/feedback',[FeedBackController::class,'feedback']);
 Route::post('pre-booking', [PreBookingController::class,'saveEmailForPreBooking']);
