@@ -81,22 +81,45 @@ class RegistrationController extends Controller
             // Send Verification Email Using Custom Verify Notification
             $userObj->notify(new VerifyEmail($messages));
 
-            $messages = [
-                'subject' => 'New Agency Is Register With Our CRM Platform',
-                'url-title' => 'Find Detail',
-                'url' => '/',
-                'lines_array' => [
-                    'title' => 'Dear Admin,',
-                    'body-text' => 'We have found that New Agency Is Register With Us. Please Find Detail Below:',
-                    'special_Agency_Name' => $agencyObj->name,
-                    'special_Email' => $userObj->email,
-                ],
-            ];
+            /*
+            |--------------------------------------------------------------------------
+            | SEND NOTIFICATION TO ADMINS BASED ON USER TYPE
+            |--------------------------------------------------------------------------
+            */
+
+            if ($validate['user_type'] === 'agent') {
+
+                // If new user is AGENT
+                $adminMessages = [
+                    'subject' => 'A New Agent Has Joined the Platform',
+                    'url-title' => 'View Details',
+                    'url' => '/',
+                    'lines_array' => [
+                        'title' => 'Dear Admin,',
+                        'body-text' => 'A new agent has just registered on the platform. Below are the details:',
+                        'special_Agency_Name' => $agencyObj->name,
+                        'special_Email' => $userObj->email,
+                    ],
+                ];
+
+            } else {
+                $adminMessages = [
+                    'subject' => 'New Agency Is Register With Our CRM Platform',
+                    'url-title' => 'Find Detail',
+                    'url' => '/',
+                    'lines_array' => [
+                        'title' => 'Dear Admin,',
+                        'body-text' => 'We have found that New Agency Is Register With Us. Please Find Detail Below:',
+                        'special_Agency_Name' => $agencyObj->name,
+                        'special_Email' => $userObj->email,
+                    ],
+                ];
+            }
             $admins = User::where('role', 'super_admin')->get();
 
             if ($admins->count() > 0) {
                 foreach ($admins as $admin) {
-                    $admin->notify(new CommonEmailNotification($messages));
+                    $admin->notify(new CommonEmailNotification($adminMessages));
                 }
             }
 

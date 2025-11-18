@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CurrentPlan;
 use App\Models\Plan;
 use App\Models\AffiliateBankAccountDetails;
+use App\Notifications\CommonEmailNotification;
 
 class AffiliateControllers extends Controller
 {
@@ -511,6 +512,34 @@ class AffiliateControllers extends Controller
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEND EMAIL NOTIFICATION TO ALL ADMINS FOR WITHDRAWAL REQUEST
+            |--------------------------------------------------------------------------
+            */
+
+            $agent = User::find($request->agent_id);
+
+            $adminMessage = [
+                'subject'   => 'New Withdrawal Request Submitted',
+                'url-title' => 'Review Request',
+                'url'       => '/',
+                'lines_array' => [
+                    'title'      => 'Dear Admin,',
+                    'body-text'  => 'A new withdrawal request has been submitted. Below are the details:',
+                    'special_Agent_Name' => $agent ? $agent->name : 'Unknown Agent',
+                    'special_Email'      => $agent ? $agent->email : 'N/A',
+                    'special_Amount'     => '₹' . $request->amount,
+                ],
+            ];
+
+            // Notify All Super Admins
+            $admins = User::where('role', 'super_admin')->get();
+
+            foreach ($admins as $admin) {
+                $admin->notify(new CommonEmailNotification($adminMessage));
+            }
 
             return response()->json([
                 'success' => true,
