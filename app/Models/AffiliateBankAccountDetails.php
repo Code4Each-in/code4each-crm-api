@@ -13,10 +13,9 @@ class AffiliateBankAccountDetails extends Model
 
     protected $fillable = [
         'agent_id',
-        'account_holder_name',
-        'card_number',
-        'expiry_month',
-        'expiry_year',
-        'cvv',
+        'account_name',
+        'bank_name',
+        'account_number',
+        'ifsc',
     ];
 }
