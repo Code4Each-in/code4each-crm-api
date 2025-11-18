@@ -450,11 +450,10 @@ class AffiliateControllers extends Controller
         // 1. Validate incoming fields
         $validator = Validator::make($request->all(), [
             'agent_id'     => 'required',
-            'card_name'    => 'required',
-            'card_number'  => 'required',
-            'exp_month'    => 'required',
-            'exp_year'     => 'required',
-            'cvv'          => 'required',
+            'account_name'    => 'required',
+            'bank_name'  => 'required',
+            'account_number'    => 'required',
+            'ifsc'     => 'required',
             'amount'       => 'required|numeric',
         ]);
 
@@ -471,34 +470,30 @@ class AffiliateControllers extends Controller
 
             if ($existingAccount) {
                 $needsUpdate = 
-                    $existingAccount->account_holder_name !== $request->card_name ||
-                    $existingAccount->card_number        !== $request->card_number ||
-                    $existingAccount->expiry_month       !== $request->exp_month ||
-                    $existingAccount->expiry_year        !== $request->exp_year ||
-                    $existingAccount->cvv                !== $request->cvv;
-
+                    $existingAccount->account_name   !== $request->account_name ||
+                    $existingAccount->bank_name      !== $request->bank_name ||
+                    $existingAccount->account_number !== $request->account_number ||
+                    $existingAccount->ifsc           !== $request->ifsc;
                 if ($needsUpdate) {
                     $existingAccount->update([
-                        'account_holder_name' => $request->card_name,
-                        'card_number'         => $request->card_number,
-                        'expiry_month'        => $request->exp_month,
-                        'expiry_year'         => $request->exp_year,
-                        'cvv'                 => $request->cvv,
-                        'updated_at'          => now(),
+                        'account_name'    => $request->account_name,
+                        'bank_name'       => $request->bank_name,
+                        'account_number'  => $request->account_number,
+                        'ifsc'            => $request->ifsc,
+                        'updated_at'      => now(),
                     ]);
                 }
                 $accountDetailsId = $existingAccount->id;
 
             } else {
                 $newAccount = AffiliateBankAccountDetails::create([
-                    'agent_id'            => $request->agent_id,
-                    'account_holder_name' => $request->card_name,
-                    'card_number'         => $request->card_number,
-                    'expiry_month'        => $request->exp_month,
-                    'expiry_year'         => $request->exp_year,
-                    'cvv'                 => $request->cvv,
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
+                    'agent_id'        => $request->agent_id,
+                    'account_name'    => $request->account_name,
+                    'bank_name'       => $request->bank_name,
+                    'account_number'  => $request->account_number,
+                    'ifsc'            => $request->ifsc,
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
                 ]);
 
                 $accountDetailsId = $newAccount->id;

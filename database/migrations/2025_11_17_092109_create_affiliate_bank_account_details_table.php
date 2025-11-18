@@ -16,11 +16,10 @@ return new class extends Migration
         Schema::create('affiliate_bank_account_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('agent_id')->nullable();
-            $table->string('account_holder_name')->nullable();
-            $table->string('card_number')->nullable();
-            $table->string('expiry_month')->nullable();
-            $table->string('expiry_year')->nullable(); 
-            $table->string('cvv')->nullable();
+            $table->string('account_name')->nullable();
+            $table->string('bank_name')->nullable();
+            $table->string('account_number')->nullable();
+            $table->string('ifsc')->nullable(); 
             $table->timestamps();
         });
     }
