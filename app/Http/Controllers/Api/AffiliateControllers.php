@@ -330,7 +330,9 @@ class AffiliateControllers extends Controller
         }
 
         // Get referred users
-        $referredUsers = User::where('referred_by', $user->id)->get();
+        $referredUsers = User::where('referred_by', $user->id)
+                        ->whereNotNull('email_verified_at')
+                        ->get();
 
         $planHistory = [];
 
