@@ -29,12 +29,13 @@ class RegistrationController extends Controller
             // 'description' => 'nullable|string',
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'phone' => 'nullable',
+            'phone' => 'nullable|unique:users,phone',
             'password' => 'required',
             'user_type' => 'required',
             'referral_code' => 'nullable',
         ], [
             'email.unique' => 'This email is already in use, please try with some other email address.',
+            'phone.unique' => 'This phone number is already in use, please try with another number.',
         ]);
 
         if ($validator->fails()) {
@@ -42,7 +43,7 @@ class RegistrationController extends Controller
         }
         $validate = $validator->valid();
 
-        $agentReferralCode = User::where('referral_code', $validate['referral_code'])->first('id');
+        $agentReferralCode = User::where('referral_code', $validate['referral_code'] ?? null)->first('id');
         try {
             DB::beginTransaction();
 
@@ -58,8 +59,8 @@ class RegistrationController extends Controller
             $userObj = new User();
             $userObj->agency_id = $agencyObj->id;
             $userObj->name = $validate['name'];
-            $userObj->email = $validate['email'];
-            $userObj->phone = $validate['phone'];
+            $userObj->email = $validate['email'] ?? null;
+            $userObj->phone = $validate['phone'] ?? null;
             $userObj->role = "admin";
             $userObj->user_type = $validate['user_type'];
             $userObj->password = Hash::make($validate['password']);
