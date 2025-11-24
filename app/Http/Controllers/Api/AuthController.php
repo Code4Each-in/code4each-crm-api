@@ -19,7 +19,8 @@ class AuthController extends Controller
             ];
 
             $validator = Validator::make($request->all(), [
-                'email' => 'required',
+                'email' => 'nullable',
+                'phone' => 'nullable',
                 'password' => 'required',
             ]);
 
@@ -27,15 +28,24 @@ class AuthController extends Controller
                 return response()->json(['errors' => $validator->errors()], 400);
             }
             
-            $credentials = $request->only('email', 'password');
+            $login = $request->email ?? $request->phone;
+            $isEmail = $request->email ? true : false;
+            $password = $request->password;
 
-            $user = User::where('email', $credentials['email'])->first();
+            // Check if user exists
+            $user = User::where($isEmail ? 'email' : 'phone', $login)->first();
 
             if (!$user) {
-                $response['message'] = 'No account found with this email. Please sign up first.';
+                $response['message'] = 'No account found with this ' . ($isEmail ? 'email' : 'phone') . '. Please sign up first.';
                 $response['status'] = 405;
                 return response()->json($response, 405);
             }
+
+            // Prepare credentials for Auth
+            $credentials = [
+                $isEmail ? 'email' : 'phone' => $login,
+                'password' => $password
+            ];
 
             if (Auth::attempt($credentials)) {
                 $user = Auth::user();
