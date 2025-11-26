@@ -404,8 +404,8 @@ class WordpressCustomTemplatePagesController extends Controller
         $query = Component::where('status', 'active');
 
         if ($type) {
-            if (in_array($type, ['common_text', 'contact_form'])) {
-                $query->whereIn('type', ['common_text', 'contact_form']);
+            if (in_array($type, ['common_text', 'contact_form', 'google_map'])) {
+                $query->whereIn('type', ['common_text', 'contact_form', 'google_map']);
             } else {
                 $query->where('type', $type);
             }

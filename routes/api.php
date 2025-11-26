@@ -167,6 +167,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-referred-users-plan-history',[AffiliateControllers::class,'getReferredUsersPlanHistory']);
     Route::post('/post-withdrawal-data',[AffiliateControllers::class,'postWithdrawalData']);
     Route::get('/get-affiliate-account-details',[AffiliateControllers::class,'getAffiliateAccountDetails']);
+
+    Route::get('/get-google-review-link',[GoogleSocialiteController::class,'getGoogleReviewLink']);
+    Route::post('/save-google-review-link',[GoogleSocialiteController::class,'saveGoogleReviewLink']);
 });
 
 //End of Authenticated Group Routes
