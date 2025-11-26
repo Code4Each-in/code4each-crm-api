@@ -14,7 +14,6 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable()->change();
             $table->string('google_review_link')->nullable()->after('is_beta_user');
         });
     }
@@ -28,7 +27,6 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('google_place_id');
-            $table->string('email')->nullable(false)->change();
         });
     }
 };
