@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class GoogleSocialiteController extends Controller
 {
@@ -197,5 +198,73 @@ class GoogleSocialiteController extends Controller
 
      return response()->json($response);
 
+    }
+
+    public function getGoogleReviewLink(Request $request)
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+        $validatedData = $validator->validated();
+        $userObj = User::find($validatedData['user_id']);
+
+        if($userObj){
+            $response = [
+                'google_review_link' => $userObj->google_review_link,
+                'status' => 200,
+                'success' => true,
+            ];
+        } else {
+            $response = [
+                'message' => "User Not Found.",
+                'status' => 404,
+                'success' => false,
+            ];
+        }
+     return response()->json($response);
+    }
+
+    public function saveGoogleReviewLink(Request $request)
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'google_review_link' => 'required',
+            'website_domain' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+        $validatedData = $validator->validated();
+        $userObj = User::find($validatedData['user_id']);
+        if($userObj){
+            $userObj->google_review_link = $validatedData['google_review_link'];
+            $userObj->save();
+        }
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/add-google-review-link';
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status']   = $wpResponse->status();
+            $response['success']  = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status']   = $wpResponse->status() ?? 400;
+            $response['success']  = false;
+        }
+     return response()->json($response);
     }
 }
