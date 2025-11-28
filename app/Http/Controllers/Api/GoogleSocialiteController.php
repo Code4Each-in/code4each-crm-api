@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
+use App\Models\AgencyWebsite;
 use App\Models\User;
 use App\Notifications\CommonEmailNotification;
 use App\Notifications\VerifyEmail;
@@ -266,5 +267,67 @@ class GoogleSocialiteController extends Controller
             $response['success']  = false;
         }
      return response()->json($response);
+    }
+
+    public function updateMapAddress(Request $request)
+    {
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'address' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country' => 'required',
+            'pincode' => 'required',
+            'website_domain' => 'required',
+            'agency_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 400);
+        }
+        $validated = $validator->validated();
+
+        $agency = AgencyWebsite::find($validated['agency_id']);
+
+        // Update fields in the user table
+        $agency->address = $validated['address'] ?? null;
+        $agency->city = $validated['city'] ?? null;
+        $agency->state = $validated['state'] ?? null;
+        $agency->country = $validated['country'] ?? null;
+        $agency->pin = $validated['pincode'] ?? null;
+
+        $agency->save();
+
+        $websiteDomain = $validated['website_domain'];
+        $postApiUrl = $websiteDomain . 'wp-json/v1/change_global_variables';
+        $data = [
+            "address" => ["value" => $validated["address"]],
+            "state" => ["value" => $validated["state"]],
+            "city" => ["value" => $validated["city"]],
+            "country" => ["value" => $validated["country"]],
+            "pincode" => ["value" => $validated["pincode"]],
+        ];
+        $wpResponse = Http::post($postApiUrl, $data);
+        if ($wpResponse->successful()) {
+            $response['response'] = $wpResponse->json();
+            $response['status']   = $wpResponse->status();
+            $response['success']  = true;
+        } else {
+            $response['response'] = $wpResponse->json() ?? 'Failed to post';
+            $response['status']   = $wpResponse->status() ?? 400;
+            $response['success']  = false;
+        }
+
+        return response()->json([
+            'message' => "Map Address Updated Successfully.",
+            'status' => 200,
+            'success' => true,
+        ], 200);
     }
 }
