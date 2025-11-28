@@ -170,6 +170,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/get-google-review-link',[GoogleSocialiteController::class,'getGoogleReviewLink']);
     Route::post('/save-google-review-link',[GoogleSocialiteController::class,'saveGoogleReviewLink']);
+
+    Route::post('/update-map-address',[GoogleSocialiteController::class,'updateMapAddress']);
 });
 
 //End of Authenticated Group Routes
