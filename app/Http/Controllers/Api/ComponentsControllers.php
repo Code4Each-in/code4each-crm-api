@@ -173,6 +173,15 @@ class ComponentsControllers extends Controller
                         ]);
                     }
 
+                    $newDomain = new Domains();
+                    $newDomain->agency_id = $agency_id;
+                    $newDomain->website_id = $websitesData->id;
+                    $newDomain->user_id = auth()->user()->id;
+                    $newDomain->domain = $websiteUrl;
+                    $newDomain->status = null;
+                    $newDomain->type = 'staging';
+                    $newDomain->save();
+
                      /* Worked on CurrentPlan and PlanLog End */
                      
                     // send mail to user

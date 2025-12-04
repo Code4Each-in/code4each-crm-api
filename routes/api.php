@@ -29,7 +29,7 @@ use App\Http\Controllers\Api\WordpressCustomFormController;
 use App\Http\Controllers\Api\WordpressCustomTemplatePagesController;
 use App\Http\Controllers\Api\RazorpayWebhookController;
 use App\Http\Controllers\Api\AffiliateControllers;
-
+use App\Http\Controllers\Api\DomainsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,6 +172,12 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/save-google-review-link',[GoogleSocialiteController::class,'saveGoogleReviewLink']);
 
     Route::post('/update-map-address',[GoogleSocialiteController::class,'updateMapAddress']);
+
+    Route::get('/get-domains',[DomainsController::class,'getDomains']);
+    Route::post('/save-new-domain', [DomainsController::class,'saveNewDomain']);  
+    Route::post('/check-domain', [DomainsController::class, 'checkDomain']);
+    Route::delete('/delete-domain', [DomainsController::class,'deleteDomain']);
+    Route::post('/set-primary-domain', [DomainsController::class,'setPrimaryDomain']);
 });
 
 //End of Authenticated Group Routes
