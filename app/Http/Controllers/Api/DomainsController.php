@@ -48,7 +48,7 @@ class DomainsController extends Controller
         $newDomain->website_id = $validate['website_id'];
         $newDomain->user_id = $validate['user_id'];
         $newDomain->domain = $validate['new_domain'];
-        $newDomain->status = 'pending';
+        $newDomain->status = 'Not Verified';
         $newDomain->type = null;
         $newDomain->save();
 
@@ -117,6 +117,7 @@ class DomainsController extends Controller
         // Fetch DNS records
         $aRecords = dns_get_record($domain, DNS_A);
         $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
+        print_r($aRecords);
         print_r($cnameRecords);
 
         $aVerified = false;
@@ -137,7 +138,7 @@ class DomainsController extends Controller
         }
 
         // Final status
-        $status = ($aVerified && $cnameVerified) ? "verified" : "pending";
+        $status = ($aVerified && $cnameVerified) ? "Verified" : "Not Verified";
 
         // Update DB
         Domains::where('domain', $domain)->update([
