@@ -133,6 +133,7 @@ class WordpressMenusController extends Controller
 
         $validator = Validator::make($request->all(), [
             'website_url'=>'required',
+            'menu_data'=> 'required|array',
             'menu_data.id' => 'required',
 
         ]);
@@ -143,7 +144,7 @@ class WordpressMenusController extends Controller
  
         $validate = $validator->valid();
         $deleteData = $validate['menu_data'];
-       //dump($deleteData); dd('hdsgfhdsg');
+
          //UPDATE DATA RELATED TO MENUS
         $websiteUrl =  $validate['website_url'];
         $deleteApiUrl = $websiteUrl . '/wp-json/v1/delete-menu';

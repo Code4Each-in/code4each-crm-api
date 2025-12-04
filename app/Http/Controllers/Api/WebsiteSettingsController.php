@@ -47,6 +47,7 @@ class WebsiteSettingsController extends Controller
             "id" => $websiteData->id,
             "website_domain" => $websiteData->website_domain,
             "assigned" => $websiteData->assigned,
+            "staging_domain" => $websiteData->staging_domain,
             "agency_website_detail" => [
                 "id" => $agencyWebsiteDetail->id,
                 "business_name" => $agencyWebsiteDetail->business_name,
