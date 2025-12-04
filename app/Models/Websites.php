@@ -12,6 +12,7 @@ class Websites extends Model
     protected $hidden = [
         'admin_username',
         'admin_password',
+        'staging_domain',
     ];
 
     public function agencyWebsiteDetail()

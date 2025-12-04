@@ -20,6 +20,7 @@ class WebsiteDatabase extends Model
         'username',
         'password',
         'website_domain',
+        'staging_domain',
         'updated_at'
     ];
 
