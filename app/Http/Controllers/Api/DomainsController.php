@@ -8,6 +8,7 @@ use App\Models\Websites;
 use App\Models\WebsiteDatabase;
 use App\Models\Domains;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class DomainsController extends Controller
 {
@@ -117,8 +118,6 @@ class DomainsController extends Controller
         // Fetch DNS records
         $aRecords = dns_get_record($domain, DNS_A);
         $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
-        print_r($aRecords);
-        print_r($cnameRecords);
 
         $aVerified = false;
         $cnameVerified = false;
@@ -141,7 +140,7 @@ class DomainsController extends Controller
         $status = ($aVerified && $cnameVerified) ? "Verified" : "Not Verified";
 
         // Update DB
-        Domains::where('domain', $domain)->update([
+        Domains::where('domain', $fullDomain)->update([
             'status' => $status
         ]);
 
@@ -205,6 +204,7 @@ class DomainsController extends Controller
             'domain'     => 'required',
             'agency_id'  => 'required',
             'staging_domain' => 'required',
+            'domain_name'     => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -230,6 +230,14 @@ class DomainsController extends Controller
             $websiteDatabase->website_domain = $validate['domain'];
             $websiteDatabase->save();
         }
+
+        $data = [
+            'old_domain' => $validate['staging_domain'],
+            'new_domain' => $validate['domain_name'],
+        ];
+        $websiteUrl = $request->input('staging_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/replace-domain';
+        $wpResponse = Http::post($postApiUrl, $data);
 
         $response = [
             'message' => "Primary domain set successfully.",
