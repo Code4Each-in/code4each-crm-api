@@ -24,6 +24,7 @@ use App\Models\WebsiteTemplateComponent;
 use App\Models\Plan;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Models\Domains;
 
 class ComponentsControllers extends Controller
 {

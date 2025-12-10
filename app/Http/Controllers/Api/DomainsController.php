@@ -122,99 +122,62 @@ class DomainsController extends Controller
     }
 
     public function checkDomain(Request $request)
-{
-    $fullDomain = $request->input('domain');
-    $fullStagingDomain = $request->input('staging_domain');
+    {
+        $fullDomain = $request->input('domain');
+        $fullstagingDomain = $request->input('staging_domain');
+        $domain = trim($fullDomain);
+        $stagingDomain = trim($fullstagingDomain);
+        $domain = preg_replace(['/^https?:\/\//', '/\/$/'], '', $domain);
+        $stagingDomain = preg_replace(['/^https?:\/\//', '/\/$/'], '', $stagingDomain);
 
-    // Clean domains
-    $domain = preg_replace(['/^https?:\/\//', '/\/$/'], '', trim($fullDomain));
-    $stagingDomain = preg_replace(['/^https?:\/\//', '/\/$/'], '', trim($fullStagingDomain));
-
-    if (empty($domain)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid domain.'
-        ], 400);
-    }
-
-    // Expected DNS values
-    $expectedARecord = "77.37.32.140";
-    $expectedCname   = $stagingDomain;
-
-    // Fetch DNS records
-    $aRecords = dns_get_record($domain, DNS_A);
-    $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
-
-    // Verification flags
-    $aVerified = false;
-    $cnameVerified = false;
-
-    foreach ($aRecords as $record) {
-        if (!empty($record['ip']) && $record['ip'] === $expectedARecord) {
-            $aVerified = true;
+        if (empty($domain)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid domain.'
+            ], 400);
         }
-    }
 
-    foreach ($cnameRecords as $record) {
-        if (!empty($record['target']) && $record['target'] === $expectedCname) {
-            $cnameVerified = true;
+        // Your expected DNS values
+        $expectedARecord = "77.37.32.140";
+        $expectedCname   = $stagingDomain;
+
+        // Fetch DNS records
+        $aRecords = dns_get_record($domain, DNS_A);
+        $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
+
+        $aVerified = false;
+        $cnameVerified = false;
+
+        // Check A record
+        foreach ($aRecords as $record) {
+            if (isset($record['ip']) && $record['ip'] === $expectedARecord) {
+                $aVerified = true;
+            }
         }
-    }
 
-    // DNS final match
-    $dnsMatched = ($aVerified && $cnameVerified);
+        // Check CNAME
+        foreach ($cnameRecords as $record) {
+            if (isset($record['target']) && $record['target'] === $expectedCname) {
+                $cnameVerified = true;
+            }
+        }
 
-    // Find domain record
-    $domainRow = Domains::where('domain', $fullDomain)->first();
+        // Final status
+        $status = ($aVerified && $cnameVerified) ? "Verified" : "Not Verified";
 
-    if (!$domainRow) {
-        return response()->json(['success' => false, 'message' => 'Domain not found']);
-    }
-
-    // DNS NOT MATCHED → Reset timer
-    if (!$dnsMatched) {
-        $domainRow->update([
-            'is_dns_matched' => false,
-            'verified_at' => null,
-            'status' => 'Not Verified'
+        // Update DB
+        Domains::where('domain', $fullDomain)->update([
+            'status' => $status
         ]);
 
         return response()->json([
             'success' => true,
-            'status' => 'Not Verified',
+            'domain' => $domain,
             'a_record_verified' => $aVerified,
-            'cname_verified' => $cnameVerified
+            'cname_verified' => $cnameVerified,
+            'status' => $status,
         ]);
     }
-
-    // DNS MATCHED → Start timer if new
-    if (!$domainRow->verified_at) {
-        $domainRow->verified_at = now();
-    }
-
-    $hoursPassed = now()->diffInHours($domainRow->verified_at);
-
-    // Check verification status
-    $status = $hoursPassed >= 24 ? "Verified" : "Not Verified";
-
-    // Update DB
-    $domainRow->update([
-        'is_dns_matched' => true,
-        'verified_at' => $domainRow->verified_at,
-        'status' => $status
-    ]);
-
-    // Final response
-    return response()->json([
-        'success' => true,
-        'domain' => $domain,
-        'a_record_verified' => $aVerified,
-        'cname_verified' => $cnameVerified,
-        'status' => $status,
-        'hours_passed' => $hoursPassed
-    ]);
-}
-
 
     /* Delete Domain */
     public function deleteDomain(Request $request)
