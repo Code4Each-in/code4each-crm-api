@@ -18,5 +18,7 @@ class Domains extends Model
         'domain',
         'status',
         'type',
+        'is_dns_matched',
+        'verified_at'
     ];
 }

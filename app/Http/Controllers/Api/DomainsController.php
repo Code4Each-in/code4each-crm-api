@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Websites;
 use App\Models\WebsiteDatabase;
 use App\Models\Domains;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 
@@ -52,6 +53,28 @@ class DomainsController extends Controller
         $newDomain->status = 'Not Verified';
         $newDomain->type = null;
         $newDomain->save();
+
+        // ---------------------------------------------------------------
+        // Send Mail to Super Admin
+        // ---------------------------------------------------------------
+
+        $superAdmin = User::where('role', 'super_admin')->first();
+
+        if ($superAdmin) {
+            $adminMessage = [
+                'greeting-text' => "Hello Admin,",
+                'subject' => 'New Domain Created',
+                'additional-info' => '',
+                'lines_array' => [
+                    'title' => 'A new domain has been successfully created.',
+                    'body-text' => 'Details are given below:',
+                    'special_Domain_Name' => $validate['new_domain'],
+                    'special_Created_By' => auth()->user()->name . ' (' . auth()->user()->email . ')',
+                ],
+            ];
+
+            $superAdmin->notify(new CommonEmailNotification($adminMessage));
+        }
 
         if ($newDomain) {
             $response = [
@@ -99,59 +122,99 @@ class DomainsController extends Controller
     }
 
     public function checkDomain(Request $request)
-    {
-        $fullDomain = $request->input('domain');
-        $domain = trim($fullDomain);
-        $domain = preg_replace(['/^https?:\/\//', '/\/$/'], '', $domain);
+{
+    $fullDomain = $request->input('domain');
+    $fullStagingDomain = $request->input('staging_domain');
 
-        if (empty($domain)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid domain.'
-            ], 400);
+    // Clean domains
+    $domain = preg_replace(['/^https?:\/\//', '/\/$/'], '', trim($fullDomain));
+    $stagingDomain = preg_replace(['/^https?:\/\//', '/\/$/'], '', trim($fullStagingDomain));
+
+    if (empty($domain)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid domain.'
+        ], 400);
+    }
+
+    // Expected DNS values
+    $expectedARecord = "77.37.32.140";
+    $expectedCname   = $stagingDomain;
+
+    // Fetch DNS records
+    $aRecords = dns_get_record($domain, DNS_A);
+    $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
+
+    // Verification flags
+    $aVerified = false;
+    $cnameVerified = false;
+
+    foreach ($aRecords as $record) {
+        if (!empty($record['ip']) && $record['ip'] === $expectedARecord) {
+            $aVerified = true;
         }
+    }
 
-        // Your expected DNS values
-        $expectedARecord = "77.37.32.140";
-        $expectedCname   = "alphafive.speedysites.in";
-
-        // Fetch DNS records
-        $aRecords = dns_get_record($domain, DNS_A);
-        $cnameRecords = dns_get_record("www.".$domain, DNS_CNAME);
-
-        $aVerified = false;
-        $cnameVerified = false;
-
-        // Check A record
-        foreach ($aRecords as $record) {
-            if (isset($record['ip']) && $record['ip'] === $expectedARecord) {
-                $aVerified = true;
-            }
+    foreach ($cnameRecords as $record) {
+        if (!empty($record['target']) && $record['target'] === $expectedCname) {
+            $cnameVerified = true;
         }
+    }
 
-        // Check CNAME
-        foreach ($cnameRecords as $record) {
-            if (isset($record['target']) && $record['target'] === $expectedCname) {
-                $cnameVerified = true;
-            }
-        }
+    // DNS final match
+    $dnsMatched = ($aVerified && $cnameVerified);
 
-        // Final status
-        $status = ($aVerified && $cnameVerified) ? "Verified" : "Not Verified";
+    // Find domain record
+    $domainRow = Domains::where('domain', $fullDomain)->first();
 
-        // Update DB
-        Domains::where('domain', $fullDomain)->update([
-            'status' => $status
+    if (!$domainRow) {
+        return response()->json(['success' => false, 'message' => 'Domain not found']);
+    }
+
+    // DNS NOT MATCHED → Reset timer
+    if (!$dnsMatched) {
+        $domainRow->update([
+            'is_dns_matched' => false,
+            'verified_at' => null,
+            'status' => 'Not Verified'
         ]);
 
         return response()->json([
             'success' => true,
-            'domain' => $domain,
+            'status' => 'Not Verified',
             'a_record_verified' => $aVerified,
-            'cname_verified' => $cnameVerified,
-            'status' => $status,
+            'cname_verified' => $cnameVerified
         ]);
     }
+
+    // DNS MATCHED → Start timer if new
+    if (!$domainRow->verified_at) {
+        $domainRow->verified_at = now();
+    }
+
+    $hoursPassed = now()->diffInHours($domainRow->verified_at);
+
+    // Check verification status
+    $status = $hoursPassed >= 24 ? "Verified" : "Not Verified";
+
+    // Update DB
+    $domainRow->update([
+        'is_dns_matched' => true,
+        'verified_at' => $domainRow->verified_at,
+        'status' => $status
+    ]);
+
+    // Final response
+    return response()->json([
+        'success' => true,
+        'domain' => $domain,
+        'a_record_verified' => $aVerified,
+        'cname_verified' => $cnameVerified,
+        'status' => $status,
+        'hours_passed' => $hoursPassed
+    ]);
+}
+
 
     /* Delete Domain */
     public function deleteDomain(Request $request)
