@@ -306,7 +306,7 @@ class WordpressCustomTemplatePagesController extends Controller
         $validatedData = $validator->validated();
 
         // === Handle header type file upload locally ===
-        $fileTypes = ['header', 'about_section', 'service_section', 'footer', 'common_text'];
+        $fileTypes = ['header', 'about_section', 'service_section', 'footer', 'common_text', 'gallery_section'];
         if (in_array($request->type, $fileTypes) && $request->hasFile('file')) {
             $file = $request->file('file');
             // Save file to /storage/app/public/HeaderImages
@@ -404,8 +404,8 @@ class WordpressCustomTemplatePagesController extends Controller
         $query = Component::where('status', 'active');
 
         if ($type) {
-            if (in_array($type, ['common_text', 'contact_form', 'google_map'])) {
-                $query->whereIn('type', ['common_text', 'contact_form', 'google_map']);
+            if (in_array($type, ['common_text', 'contact_form', 'google_map', 'gallery_section'])) {
+                $query->whereIn('type', ['common_text', 'contact_form', 'google_map', 'gallery_section']);
             } else {
                 $query->where('type', $type);
             }
