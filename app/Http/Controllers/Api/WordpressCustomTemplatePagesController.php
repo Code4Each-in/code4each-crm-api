@@ -494,7 +494,17 @@ class WordpressCustomTemplatePagesController extends Controller
 
                 // Special handling for image fields
                 if ($formField->field_type === 'image' && $defaultValue) {
-                    $defaultValue = str_replace('Components/', '', $defaultValue);
+                    // Check if multiple images exist (comma separated)
+                    if (str_contains($defaultValue, ',')) {
+                        $images = explode(',', $defaultValue);
+                        $images = array_map(function ($img) {
+                            return str_replace('Components/', '', trim($img));
+                        }, $images);
+                        $defaultValue = $images;
+                    } else {
+                        // Single image
+                        $defaultValue = str_replace('Components/', '', $defaultValue);
+                    }
                 }
 
                 $normalizedFieldName = $this->normalizeFieldName($formField->field_name);
@@ -796,6 +806,119 @@ class WordpressCustomTemplatePagesController extends Controller
         }
 
         return response()->json($response, $response['status']);
+    }
+
+    /* 
+     ** THIS FUNCTION IS FOR UPLOADING THE SLIDER IMAGES
+    */
+    public function uploadSliderImages(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'component_uniqueid'  => 'required',
+            'page_id'       => 'required',
+            'component_type' => 'required',
+            'type' => 'required',
+            'website_domain' => 'required',
+            'value' => 'required',
+            'field_name' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status'   => 400,
+                'success'  => false
+            ], 400);
+        }
+        $validatedData = $validator->validated();
+        $existingImages = json_decode($request->value, true);
+            if (!is_array($existingImages)) {
+                $existingImages = [];
+        }
+
+        $uploadedImages = [];
+        if ($request->hasFile('new_added_image')) {
+
+            $files = $request->file('new_added_image');
+
+            // normalize single file to array
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+
+            foreach ($files as $file) {
+
+                $timestamp = time();
+                $originalName = $file->getClientOriginalName();
+                $safeName = $timestamp . '_' . preg_replace('/\s+/', '_', $originalName);
+
+                // store file
+                $file->storeAs('public/HeaderImages', $safeName);
+
+                // public URL
+                $uploadedImages[] = 'https://app.speedysites.in/storage/HeaderImages/' . $safeName;
+            }
+        }
+
+        $finalImages = array_merge($existingImages, $uploadedImages);
+        $finalImagesJson = json_encode($finalImages);
+
+        $data = $validatedData;
+        $data['value'] = $finalImagesJson;
+
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/upload-slider-images';
+        $wpResponse = Http::post($postApiUrl, $data);
+
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'sent_data' => $data,
+            'wp_response' => $wpResponse->json()
+        ]);
+    }
+
+    /*
+     ** THIS FUNCTION IS FOR REMOVING THE SLIDER IMAGES
+    */
+    public function removeSliderImages(Request $request){
+        $response = [
+            'success' => false,
+            'status' => 400,
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'component_uniqueid'  => 'required',
+            'page_id'       => 'required',
+            'component_type' => 'required',
+            'type' => 'required',
+            'website_domain' => 'required',
+            'value' => 'required',
+            'field_name' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => $validator->errors(),
+                'status'   => 400,
+                'success'  => false
+            ], 400);
+        }
+        $validatedData = $validator->validated();
+        $websiteUrl = $request->input('website_domain');
+        $postApiUrl = $websiteUrl . '/wp-json/v1/upload-slider-images';
+        $wpResponse = Http::post($postApiUrl, $validatedData);
+
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'sent_data' => $validatedData,
+            'wp_response' => $wpResponse->json()
+        ]);
     }
 
 }

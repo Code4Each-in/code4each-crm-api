@@ -178,6 +178,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/check-domain', [DomainsController::class, 'checkDomain']);
     Route::delete('/delete-domain', [DomainsController::class,'deleteDomain']);
     Route::post('/set-primary-domain', [DomainsController::class,'setPrimaryDomain']);
+
+    Route::post('/upload-slider-images', [WordpressCustomTemplatePagesController::class, 'uploadSliderImages']);
+    Route::post('/remove-slider-images', [WordpressCustomTemplatePagesController::class, 'removeSliderImages']);
 });
 
 //End of Authenticated Group Routes
