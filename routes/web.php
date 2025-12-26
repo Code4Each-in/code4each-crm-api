@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\ThemesController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,8 +77,11 @@ Route::group(['middleware' => ['auth']], function() {
     Route::delete('/template/{id}', [WebsiteController::class, 'destroy'])->name('website.destroy');
     Route::get('/template/{id}/edit', [WebsiteController::class, 'edit'])->name('website.edit');
     Route::post('/template/{id}', [WebsiteController::class, 'update'])->name('website.update');
-});
 
+});
+//Facebook Social Auth Routes
+Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'redirectToFacebook']);
+Route::get('/auth/facebook/callback', [SocialAuthController::class, 'handleFacebookCallback']);
 
 
 //clear cache
