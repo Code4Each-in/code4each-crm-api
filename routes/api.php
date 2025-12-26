@@ -181,6 +181,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/upload-slider-images', [WordpressCustomTemplatePagesController::class, 'uploadSliderImages']);
     Route::post('/remove-slider-images', [WordpressCustomTemplatePagesController::class, 'removeSliderImages']);
+
+    Route::get('/get-connected-platforms', [GoogleSocialiteController::class, 'getConnectedPlatforms']);
 });
 
 //End of Authenticated Group Routes
