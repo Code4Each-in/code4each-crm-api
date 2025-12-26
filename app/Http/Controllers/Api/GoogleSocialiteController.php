@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use App\Models\AgencyWebsite;
 use App\Models\User;
+use App\Models\SocialAccount;
 use App\Notifications\CommonEmailNotification;
 use App\Notifications\VerifyEmail;
 use Carbon\Carbon;
@@ -330,4 +331,39 @@ class GoogleSocialiteController extends Controller
             'success' => true,
         ], 200);
     }
+
+    /*
+     ** This function will return connected platforms for the agency
+    */
+    public function getConnectedPlatforms()
+    {
+        $user = Auth::user();
+
+        $accounts = SocialAccount::where('user_id', $user->id)
+            ->get()
+            ->keyBy('platform');
+            
+        return response()->json([
+            'success' => true,
+
+            'facebook' => [
+                'connected' => $accounts->has('facebook'),
+                'name'      => $accounts->get('facebook')->name ?? null,
+                'avatar'    => $accounts->get('facebook')->avatar ?? null,
+            ],
+
+            'instagram' => [
+                'connected' => $accounts->has('instagram'),
+                'name'      => $accounts->get('instagram')->name ?? null,
+                'avatar'    => $accounts->get('instagram')->avatar ?? null,
+            ],
+
+            'linkedin' => [
+                'connected' => $accounts->has('linkedin'),
+                'name'      => $accounts->get('linkedin')->name ?? null,
+                'avatar'    => $accounts->get('linkedin')->avatar ?? null,
+            ],
+        ], 200);
+    }
+
 }
