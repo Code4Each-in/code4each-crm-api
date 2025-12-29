@@ -332,38 +332,4 @@ class GoogleSocialiteController extends Controller
         ], 200);
     }
 
-    /*
-     ** This function will return connected platforms for the agency
-    */
-    public function getConnectedPlatforms()
-    {
-        $user = Auth::user();
-
-        $accounts = SocialAccount::where('user_id', $user->id)
-            ->get()
-            ->keyBy('platform');
-            
-        return response()->json([
-            'success' => true,
-
-            'facebook' => [
-                'connected' => $accounts->has('facebook'),
-                'name'      => $accounts->get('facebook')->name ?? null,
-                'avatar'    => $accounts->get('facebook')->avatar ?? null,
-            ],
-
-            'instagram' => [
-                'connected' => $accounts->has('instagram'),
-                'name'      => $accounts->get('instagram')->name ?? null,
-                'avatar'    => $accounts->get('instagram')->avatar ?? null,
-            ],
-
-            'linkedin' => [
-                'connected' => $accounts->has('linkedin'),
-                'name'      => $accounts->get('linkedin')->name ?? null,
-                'avatar'    => $accounts->get('linkedin')->avatar ?? null,
-            ],
-        ], 200);
-    }
-
 }
