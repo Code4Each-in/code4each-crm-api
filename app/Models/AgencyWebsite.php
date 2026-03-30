@@ -44,6 +44,6 @@ class AgencyWebsite extends Model
 
     public function agency()
     {
-        return $this->hasOne(Agency::class, 'agency_id','id');
+        return $this->belongsTo(Agency::class, 'agency_id', 'id');
     }
 }

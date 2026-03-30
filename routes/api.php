@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\RazorpayWebhookController;
 use App\Http\Controllers\Api\AffiliateControllers;
 use App\Http\Controllers\Api\DomainsController;
 use App\Http\Controllers\Api\SocialAccountsController;
+use App\Http\Controllers\Api\GoogleBusinessController;
 
 /*
 |--------------------------------------------------------------------------
@@ -185,6 +186,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/get-connected-platforms', [SocialAccountsController::class, 'getConnectedPlatforms']);
     Route::post('/create-platform-post', [SocialAccountsController::class, 'createPlatformPost']);
+
+    Route::get('/google-business/auth-url', [GoogleBusinessController::class, 'getAuthUrl']);
 });
 
 //End of Authenticated Group Routes

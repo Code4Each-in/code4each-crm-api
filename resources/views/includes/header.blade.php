@@ -134,6 +134,12 @@
                     <span>Websites</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->is('agencies') ? '' : 'collapsed' }}" href="{{ route('agencies.index') }}">
+                    <i class="bi bi-building"></i>
+                    <span>Agencies</span>
+                </a>
+            </li>
         </ul>
 
     </aside><!-- End Sidebar-->
