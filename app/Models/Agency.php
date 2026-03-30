@@ -10,13 +10,14 @@ class Agency extends Model
 {
     use HasFactory, SoftDeletes;
 
-    public function user()
+    public function users()
     {
-        return $this->belongsTo(User::class, 'agency_id');
+        return $this->hasMany(User::class, 'agency_id', 'id');
     }
 
     public function agencyWebsites()
     {
-        return $this->hasMany(AgencyWebsite::class, 'agency_id');
+        return $this->hasMany(AgencyWebsite::class, 'agency_id', 'id');
     }
+
 }

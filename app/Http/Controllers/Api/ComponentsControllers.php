@@ -25,6 +25,7 @@ use App\Models\Plan;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Models\Domains;
+use App\Models\Agency;
 
 class ComponentsControllers extends Controller
 {
@@ -104,6 +105,12 @@ class ComponentsControllers extends Controller
                 'created_by' => auth()->user()->id,
             ]);
             $agency_website_id = $agencyWebsiteDetails->id;
+
+            $agencyName = Agency::find($validate['agency_id']);
+            if ($agencyName) {
+                $agencyName->name = $validate['business_name'];
+                $agencyName->save();
+            }
 
             if ($request->hasFile('logo')) {
                 $uploadedFile = $request->file('logo');
