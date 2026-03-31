@@ -20,4 +20,11 @@ class Agency extends Model
         return $this->hasMany(AgencyWebsite::class, 'agency_id', 'id');
     }
 
+    public function currentPlan()
+    {
+        return $this->hasOne(CurrentPlan::class, 'agency_id')
+            ->where('status', 1)
+            ->latest();
+    }
+
 }

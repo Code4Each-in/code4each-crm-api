@@ -48,6 +48,34 @@
                 </div>
             </div><!-- End Components Card -->
 
+            <!-- Agencies Card -->
+            <div class="col-xxl-4 col-md-6">
+                <div class="card info-card sales-card" style="position: relative;">
+                    <div class="filter">
+                    </div>
+
+                    <a href="{{ route('agencies.index') }}"
+                        aria-label="Go to Agencies"
+                        style="position: absolute; inset: 0; z-index: 1; cursor: pointer;"
+                        target="_blank"
+                    ></a>
+
+                    <div class="card-body">
+                        <h5 class="card-title">Agencies</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $agenciesCount}}</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- End Agencies Card -->
+
             <!-- Customers Card -->
 
             <div class="col-12">

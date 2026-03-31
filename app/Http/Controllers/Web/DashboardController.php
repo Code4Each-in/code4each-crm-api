@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Component;
 use App\Models\User;
+use App\Models\Agency;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -17,6 +18,9 @@ class DashboardController extends Controller
         //Get Count Of the Total Available Components
         $componentsCount = Component::count();
 
-        return view('dashboard.index',compact('userCount','componentsCount'));
+        //Get Count Of the Total Available Agencies
+        $agenciesCount = Agency::count();
+
+        return view('dashboard.index',compact('userCount','componentsCount','agenciesCount'));
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\Auth\SocialAuthController;
-use App\Http\Controllers\AgenciesController;
+use App\Http\Controllers\Web\AgenciesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +85,7 @@ Route::group(['middleware' => ['auth']], function() {
     // Super admin ke liye "Login as agency" (Vue dashboard par access token ke saath redirect)
     Route::post('/agencies/{agency}/login-as', [AgenciesController::class, 'loginAs'])
         ->name('agencies.login-as');
+    Route::patch('/agencies/status/{id}', [AgenciesController::class, 'updateStatus'])->name('agencies.update-status');
 });
 //Facebook Social Auth Routes
 Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'redirectToFacebook']);
