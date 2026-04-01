@@ -46,4 +46,13 @@ class AgencyWebsite extends Model
     {
         return $this->belongsTo(Agency::class, 'agency_id', 'id');
     }
+
+    public function websiteDatabases()
+    {
+        return $this->hasMany(
+            WebsiteDatabase::class,
+            'website_id',
+            'website_id'
+        );
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\Agency;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\WebsiteDatabase;
 
 class AgenciesController extends Controller
 {
@@ -99,9 +100,21 @@ class AgenciesController extends Controller
         ]);
 
         $website = AgencyWebsite::findOrFail($id);
-        $website->status = $request->status;
-        $website->save();
+        // Update agency_websites
+        $website->update([
+            'status' => $request->status
+        ]);
 
-        return response()->json(['success' => true, 'status' => $website->status]);
+        // Update website_databases (MATCH agency_id + website_id)
+        $website->websiteDatabases()
+            ->where('agency_id', $website->agency_id)
+            ->update([
+                'status' => $request->status
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'status'  => $request->status
+        ]);
     }
 }
