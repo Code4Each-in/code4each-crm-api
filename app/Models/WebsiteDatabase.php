@@ -21,6 +21,7 @@ class WebsiteDatabase extends Model
         'password',
         'website_domain',
         'staging_domain',
+        'status',
         'updated_at'
     ];
 
